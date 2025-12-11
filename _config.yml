@@ -5,10 +5,10 @@ baseurl: ""
 collections:
   writings:
     output: true
-    permalink: /writings/:name/
+    permalink: /projects/:name/
   projects:
     output: true
-    permalink: /projects/:name/
+    permalink: /publications/:name/
   puzzles:
     output: true
     permalink: /puzzles/:name/
