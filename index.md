@@ -12,7 +12,7 @@ Hi, my name is Malcolm. Welcome to my website.
 
 I am a 21 year old Rice Student studying math and physics. My research thusfar has been in ML for atmospheric physics and computational geophysics. 
 
-Here is where I will throw up some projects. I am pretty interested in simulating things and games, so the projects will be about that probably. I will also post puzzles and publications on here eventually.
+Here is where I will throw up some projects. I am pretty interested in simulating things and trying to solve games, so the projects will be about that probably. I will also post puzzles and publications on here eventually.
 
 Email me at mbw7@rice.edu for anything you need
 <br>
@@ -22,7 +22,10 @@ Email me at mbw7@rice.edu for anything you need
 <h2>Things That Inspired Me to do this</h2>
 <ul class="inspiration-list">
   <li><a href="https://slatestarcodex.com/2019/11/04/samsara/" target="_blank">Samsara - Scott Alexander</a></li>
-  
+  <li><a href="https://www.lesswrong.com/posts/vJFdjigzmcXMhNTsx/simulators" target="_blank">Simulators</a></li>
+  <li><a href="https://benpomeranz.com/" target="_blank">Ben Pomerantz</a></li>
+
+
   <li><a href="https://thelondonmagazine.org/cathedral-by-raymond-carver/" target="_blank">Cathedral</a></li>
   <li><a href="https://www.youtube.com/watch?v=rSKMYc1CQHE" target="_blank">Fluid Simulator</a></li>
   
