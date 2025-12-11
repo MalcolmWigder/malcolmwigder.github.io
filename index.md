@@ -6,7 +6,7 @@ title: Home
 # Welcome
 <figure style="float:right; margin-left: 1.2rem; width: 250px;">
   <img src="assets/bio.png" alt="My Bio" style="width:100%;">
-  <figcaption style="font-size: 0.7rem; text-align: center;">Me at the Puyehue Cordón-Caulle Volcanic Complex</figcaption>
+  <figcaption style="font-size: 0.7rem; text-align: center;">Me at the Puyehue Cordón-Caulle Volcano in Chile</figcaption>
 </figure>
 Hi, my name is Malcolm.
 
