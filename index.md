@@ -10,13 +10,13 @@ title: Home
 </figure>
 Hi, my name is Malcolm.
 
-I am a student at Rice University studying Math and Physics. I do research in volcanology and designing ML for atmospheric and geospacial applications. 
+I am a student at Rice University studying Math and Physics. I do research in computational physics at the Gonnermann Lab. My hobbies include backpacking, tennis (table and actual), chess, and poker.
 
-I am interested in algorithmic trading and simulation theory, so you may find some projects about that here.
+I am also interested in simulating things, so you may find some projects about that here.
 
-You may also find puzzles/problems, as crafting them is a skill I am working to improve. Email me any solutions or thoughts.
+You may also find puzzles, as crafting them is a skill I am working to improve. Email me solutions.
 
-
+Reach me at malcolmwigder@gmail.com
 <br>
 <br>
 
@@ -24,8 +24,6 @@ You may also find puzzles/problems, as crafting them is a skill I am working to 
 <h2>Things That Inspired Me to do this</h2>
 <ul class="inspiration-list">
   <li><a href="https://slatestarcodex.com/2019/11/04/samsara/" target="_blank">Samsara - Scott Alexander</a></li>
-  <li><a href="https://usa.anarchistlibraries.net/library/anna-prouty-an-anarcho-taoist-manifesto" target="_blank">Anarchism and Taoism - Anna Prouty</a></li>
-  <li><a href="https://sashachapin.substack.com/p/an-open-letter-to-56-people-i-know?r=1ec7d7&utm_medium=ios&triedRedirect=true" target="_blank">Sasha Chapin</a></li>
   
   <li><a href="https://thelondonmagazine.org/cathedral-by-raymond-carver/" target="_blank">Cathedral</a></li>
   <li><a href="https://www.youtube.com/watch?v=rSKMYc1CQHE" target="_blank">Fluid Simulator</a></li>
