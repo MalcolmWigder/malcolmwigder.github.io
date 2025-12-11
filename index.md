@@ -16,7 +16,7 @@ I am also interested in simulating things, so you may find some projects about t
 
 You may also find puzzles, as crafting them is a skill I am working to improve. Email me solutions.
 
-Reach me at malcolmwigder@gmail.com
+Reach me at mbw7@rice.edu
 <br>
 <br>
 
