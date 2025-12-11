@@ -8,15 +8,13 @@ title: Home
   <img src="assets/bio.png" alt="My Bio" style="width:100%;">
   <figcaption style="font-size: 0.7rem; text-align: center;">Me at the Puyehue Cordón-Caulle Volcano in Chile</figcaption>
 </figure>
-Hi, my name is Malcolm.
+Hi, my name is Malcolm. Welcome to my website.
 
-I am a student at Rice University studying Math and Physics. I do research in computational physics at the Gonnermann Lab. My hobbies include backpacking, tennis (table and actual), chess, and poker.
+I am a 21 year old Rice Student studying math and physics. My research thusfar has been in ML for atmospheric physics and computational geophysics. 
 
-I am also interested in simulating things, so you may find some projects about that here.
+Here is where I will throw up some projects. I am pretty interested in simulating things and games, so the projects will be about that probably. I will also post puzzles and publications on here eventually.
 
-You may also find puzzles, as crafting them is a skill I am working to improve. Email me solutions.
-
-Reach me at mbw7@rice.edu
+Email me at mbw7@rice.edu for anything you need
 <br>
 <br>
 
