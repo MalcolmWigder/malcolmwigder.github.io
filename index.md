@@ -10,11 +10,16 @@ title: Home
 </figure>
 Hi, my name is Malcolm. Welcome to my website.
 
-I am a 21 year old Rice Student studying math and physics. My research thusfar has been in ML for atmospheric physics and computational geophysics. 
+I am a 21 year old at Rice University studying math and physics. My research thusfar has been in ML for atmospheric physics and computational geophysics. 
 
 Here is where I will throw up some projects. I am pretty interested in simulating things and trying to solve games, so the projects will be about that probably. I will also post puzzles and publications on here eventually.
 
-Email me at mbw7@rice.edu for anything you need
+Some other interests include:
+- backpacking
+- tennis (table and actual)
+- writing
+
+Email me at mbw7@rice.edu for anything you ever need
 <br>
 <br>
 
