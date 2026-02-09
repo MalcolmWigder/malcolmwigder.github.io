@@ -37,7 +37,7 @@ Assuming you figured it out. Good job.
 
 <script>
 (function () {
-  var DELTA = 0.1, STORM_R = 0.5, TRIALS = 1000, MAX_N = 500;
+  var DELTA = 0.1, STORM_R = 0.5, TRIALS = 10, MAX_N = 5000;
 
   function randDisk() {
     var u = Math.random(), a = Math.random() * 6.2832, r = Math.sqrt(u);
