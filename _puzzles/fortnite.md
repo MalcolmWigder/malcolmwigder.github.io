@@ -5,7 +5,7 @@ date: 2025-07-11
 image: /assets/puzzle1/10.png
 layout: default
 status: open
-published: false
+published: true
 ---
 
 <p> i) Ok. Circle of radius 1 (fortnite map), populated randomly with N players. But now there's a storm of radius 0.5 randomly on the map, and the players not in the storm die. How many storms does it take for us to be 99% sure that all N players have died? "P(total_death(N)) > 0.99"? </p>
