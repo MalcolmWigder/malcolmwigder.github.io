@@ -43,6 +43,10 @@ Assuming you figured it out. Good job.
     var u = Math.random(), a = Math.random() * 6.2832, r = Math.sqrt(u);
     return [r * Math.cos(a), r * Math.sin(a)];
   }
+  function randInDisk(cx, cy, rad) {
+    var u = Math.random(), a = Math.random() * 6.2832, r = rad * Math.sqrt(u);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
   function dist(a, b) { var dx = a[0]-b[0], dy = a[1]-b[1]; return Math.sqrt(dx*dx+dy*dy); }
   function norm(p) { return Math.sqrt(p[0]*p[0]+p[1]*p[1]); }
   function moveTowardCenter(p) {
@@ -87,7 +91,7 @@ Assuming you figured it out. Good job.
     }
     function step() {
       if (walk) for (var i = 0; i < N; i++) { if (alive[i]) players[i] = moveTowardCenter(players[i]); }
-      storm = randDisk();
+      storm = storm ? randInDisk(storm[0], storm[1], STORM_R) : randDisk();
       for (var i = 0; i < N; i++) { if (alive[i] && dist(players[i], storm) >= STORM_R) alive[i] = false; }
       round++;
     }
@@ -105,7 +109,7 @@ Assuming you figured it out. Good job.
 
   /* ── monte carlo (walk = true/false) ── */
   function simulate(n, walk) {
-    var ps = [], a = [];
+    var ps = [], a = [], prev = null;
     for (var i = 0; i < n; i++) { ps.push(randDisk()); a.push(true); }
     var rounds = 0;
     while (true) {
@@ -113,7 +117,8 @@ Assuming you figured it out. Good job.
       for (var i = 0; i < n; i++) if (a[i]) { done = false; break; }
       if (done) return rounds;
       if (walk) for (var i = 0; i < n; i++) { if (a[i]) ps[i] = moveTowardCenter(ps[i]); }
-      var c = randDisk();
+      var c = prev ? randInDisk(prev[0], prev[1], STORM_R) : randDisk();
+      prev = c;
       for (var i = 0; i < n; i++) { if (a[i] && dist(ps[i], c) >= STORM_R) a[i] = false; }
       rounds++;
     }
