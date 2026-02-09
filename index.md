@@ -16,7 +16,7 @@ Here is where I will throw up some projects. I am pretty interested in simulatin
 
 Some other interests include:
 - backpacking
-- tennis (table and actual)
+- tennis (<a href="https://substack.com/home/post/p-182581494" target="_blank">table</a> and actual)
 - writing
 
 Email me at mbw7@rice.edu for anything you ever need

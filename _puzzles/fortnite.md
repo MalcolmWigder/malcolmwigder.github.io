@@ -1,13 +1,13 @@
 ---
 title: Fortnite!
-summary: Try.
+summary: Give this a try.
 date: 2025-07-11
 layout: default
 status: open
 published: true
 ---
 
-<p> i) Circle of radius 1 (the map), populated randomly with N players. Each round a new safe zone appears: its radius is half the previous one, and it must be entirely contained within the previous circle. Players outside the new zone die. Players don't move. The first safe zone has radius 0.5. On average, how many rounds until total death? </p>
+<p> i) Circle of radius 1 (the map), populated randomly with N players. Each round a new safe zone appears: its radius is half the previous one, and it must be entirely contained within the previous circle. Players outside the new zone die. Players don't move. The first safe zone has radius 0.5. On average, how many rounds until total death for N starting players? </p>
 
 Assuming you figured it out. Good job.
 
