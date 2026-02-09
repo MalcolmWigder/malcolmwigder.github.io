@@ -3,7 +3,7 @@ title: N-Body
 summary: Gravitational dynamics from first principles
 date: 2025-07-20
 layout: default
-status: open
+status: closed
 ---
 
 <style>

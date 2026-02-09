@@ -46,6 +46,17 @@ permalink: /projects/
   font-size: 0.9em;
   color: #888;
 }
+.card-note {
+  display: block;
+  margin-top: -24px;
+  margin-bottom: 32px;
+  padding-left: 24px;
+  font-size: 0.9em;
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.card-note:hover { color: red; }
 .section-title {
   font-size: 1.2em;
   font-weight: 600;
@@ -60,7 +71,7 @@ permalink: /projects/
 
 {% for project in site.projects reversed %}
   {% if project.status == "open" %}
-    <a class="card" href="{{ project.url }}">
+    <a class="card" href="{% if project.external_url %}{{ project.external_url }}{% else %}{{ project.url }}{% endif %}"{% if project.external_url %} target="_blank"{% endif %}>
       {% if project.image %}
         <img class="card-img" src="{{ project.image }}" alt="Thumbnail">
       {% endif %}
@@ -70,6 +81,9 @@ permalink: /projects/
         <p class="card-date">{{ project.date | date: "%b %d, %Y" }}</p>
       </div>
     </a>
+    {% if project.note %}
+      <a class="card-note" href="{{ project.url }}">{{ project.note }}</a>
+    {% endif %}
   {% endif %}
 {% endfor %}
 
@@ -77,7 +91,7 @@ permalink: /projects/
 
 {% for project in site.projects reversed %}
   {% if project.status == "closed" %}
-    <a class="card" href="{{ project.url }}">
+    <a class="card" href="{% if project.external_url %}{{ project.external_url }}{% else %}{{ project.url }}{% endif %}"{% if project.external_url %} target="_blank"{% endif %}>
       {% if project.image %}
         <img class="card-img" src="{{ project.image }}" alt="Thumbnail">
       {% endif %}
@@ -87,5 +101,8 @@ permalink: /projects/
         <p class="card-date">{{ project.date | date: "%b %d, %Y" }}</p>
       </div>
     </a>
+    {% if project.note %}
+      <a class="card-note" href="{{ project.url }}">{{ project.note }}</a>
+    {% endif %}
   {% endif %}
 {% endfor %}
