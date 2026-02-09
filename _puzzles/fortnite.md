@@ -7,14 +7,14 @@ status: open
 published: true
 ---
 
-<p> i) Circle of radius 1 (the map), populated randomly with N players. Each round a safe zone of radius 0.5 appears at a random position on the map &mdash; players outside it die. Players don't move. How many storms does it take to be 99% sure all N players are dead? </p>
+<p> i) Circle of radius 1 (the map), populated randomly with N players. Each round a safe zone of radius 0.5 appears at a random position on the map; players outside it die. Players don't move. How many storms does it take to be 99% sure all N players are dead? </p>
 
 Assuming you figured it out. Good job.
 
 <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin:32px 0;">
   <div>
     <canvas id="sim1" width="300" height="300" style="border:1px solid #eee; border-radius:8px;"></canvas>
-    <p style="font-size:12px; color:#888; margin:6px 0 0;">i) N=20 &middot; static &middot; auto-running</p>
+    <p style="font-size:12px; color:#888; margin:6px 0 0;">i) N=100 &middot; static &middot; auto-running</p>
   </div>
   <div>
     <canvas id="plot1" width="420" height="300" style="border:1px solid #eee; border-radius:8px;"></canvas>
@@ -27,7 +27,7 @@ Assuming you figured it out. Good job.
 <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin:32px 0;">
   <div>
     <canvas id="sim2" width="300" height="300" style="border:1px solid #eee; border-radius:8px;"></canvas>
-    <p style="font-size:12px; color:#888; margin:6px 0 0;">ii) N=20 &middot; &delta;=0.1 &middot; auto-running</p>
+    <p style="font-size:12px; color:#888; margin:6px 0 0;">ii) N=100 &middot; &delta;=0.1 &middot; auto-running</p>
   </div>
   <div>
     <canvas id="plot2" width="420" height="300" style="border:1px solid #eee; border-radius:8px;"></canvas>
@@ -37,7 +37,7 @@ Assuming you figured it out. Good job.
 
 <script>
 (function () {
-  var DELTA = 0.1, STORM_R = 0.5, TRIALS = 10, MAX_N = 5000;
+  var DELTA = 0.1, STORM_R = 0.5, TRIALS = 100, MAX_N = 5000;
 
   function randDisk() {
     var u = Math.random(), a = Math.random() * 6.2832, r = Math.sqrt(u);
@@ -79,7 +79,7 @@ Assuming you figured it out. Good job.
   /* ── run an animated sim (walk = true/false) ── */
   function runAnimatedSim(canvasId, walk) {
     var sc = document.getElementById(canvasId), ctx = sc.getContext('2d');
-    var N = 20, players, alive, storm, round, paused = false;
+    var N = 100, players, alive, storm, round, paused = false;
     function reset() {
       players = []; alive = [];
       for (var i = 0; i < N; i++) { players.push(randDisk()); alive.push(true); }
@@ -119,36 +119,41 @@ Assuming you figured it out. Good job.
     }
   }
 
+  var N_STEP = 100, N_MIN = 100;
+
   function runMC(walk) {
-    var points = [], maxY = 0;
-    for (var n = 1; n <= MAX_N; n++) {
+    var medians = [], raw = [], maxY = 0;
+    for (var n = N_MIN; n <= MAX_N; n += N_STEP) {
+      var vals = [];
       for (var t = 0; t < TRIALS; t++) {
         var r = simulate(n, walk);
-        points.push(n, r);
+        vals.push(r);
+        raw.push(n, r);
         if (r > maxY) maxY = r;
       }
+      vals.sort(function(a,b){return a-b;});
+      medians.push(n, vals[Math.floor(TRIALS / 2)]);
     }
-    return { pts: points, maxY: maxY };
+    return { raw: raw, medians: medians, maxY: maxY };
   }
 
-  /* ── shared scatter plot ── */
+  /* ── shared scatter + median line plot ── */
   function drawPlot(canvasId, data) {
     var pc = document.getElementById(canvasId), ctx = pc.getContext('2d');
     var pw = pc.width, ph = pc.height;
     var pad = {l:50, r:16, t:16, b:40};
     var gw = pw - pad.l - pad.r, gh = ph - pad.t - pad.b;
     var maxY = Math.ceil(data.maxY * 1.1) || 1;
-    var pts = data.pts;
 
-    function gx(n) { return pad.l + ((n-1) / (MAX_N-1)) * gw; }
+    function gx(n) { return pad.l + ((n - N_MIN) / (MAX_N - N_MIN)) * gw; }
     function gy(v) { return pad.t + gh - (v / maxY) * gh; }
 
     ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+gh); ctx.lineTo(pad.l+gw, pad.t+gh); ctx.stroke();
 
     ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-    var xStep = MAX_N <= 100 ? 20 : 100;
-    for (var n = xStep; n <= MAX_N; n += xStep) {
+    var xStep = MAX_N <= 500 ? 100 : 1000;
+    for (var n = N_MIN; n <= MAX_N; n += xStep) {
       var x = gx(n);
       ctx.beginPath(); ctx.moveTo(x, pad.t+gh); ctx.lineTo(x, pad.t+gh+4); ctx.stroke();
       ctx.fillText(n, x, pad.t+gh+16);
@@ -166,10 +171,26 @@ Assuming you figured it out. Good job.
     ctx.textAlign = 'center'; ctx.fillText('storms to total death', 0, 0);
     ctx.restore();
 
-    // scatter
-    ctx.fillStyle = 'rgba(30,90,160,0.04)';
-    for (var i = 0; i < pts.length; i += 2) {
-      ctx.fillRect(gx(pts[i]) - 0.5, gy(pts[i+1]) - 0.5, 1.5, 1.5);
+    // scatter (all trials)
+    ctx.fillStyle = 'rgba(30,90,160,0.12)';
+    var raw = data.raw;
+    for (var i = 0; i < raw.length; i += 2) {
+      ctx.beginPath(); ctx.arc(gx(raw[i]), gy(raw[i+1]), 2, 0, 6.2832); ctx.fill();
+    }
+
+    // median line
+    var med = data.medians;
+    ctx.strokeStyle = '#c33'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (var i = 0; i < med.length; i += 2) {
+      var x = gx(med[i]), y = gy(med[i+1]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    // median dots
+    ctx.fillStyle = '#c33';
+    for (var i = 0; i < med.length; i += 2) {
+      ctx.beginPath(); ctx.arc(gx(med[i]), gy(med[i+1]), 2.5, 0, 6.2832); ctx.fill();
     }
   }
 
