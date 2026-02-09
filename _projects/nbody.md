@@ -157,15 +157,15 @@ status: closed
     <div class="formula">
       \[ \ddot{\mathbf{r}}_i = G\sum_{j \neq i} \frac{m_j\,(\mathbf{r}_j - \mathbf{r}_i)}{(\lvert\mathbf{r}_j - \mathbf{r}_i\rvert^2 + \epsilon^2)^{3/2}} \]
     </div>
-    <p>A self-gravitating system in equilibrium satisfies the virial theorem. The total kinetic and potential energies:</p>
+    <p>For a body at radius \(r\), treat all enclosed mass \(M(r)\) as a point source at the center. Equilibrium requires the gravitational pull to supply the centripetal acceleration:</p>
     <div class="formula">
-      \[ K = \frac{1}{2}\sum_i m_i\,|\mathbf{v}_i|^2 \qquad W = -\frac{1}{2}\,G\sum_{i \neq j}\frac{m_i\,m_j}{|\mathbf{r}_i - \mathbf{r}_j|} \]
+      \[ \frac{GM(r)\,m}{r^2} = \frac{mv^2}{r} \]
     </div>
-    <p>In virial equilibrium, the time-averaged energies satisfy:</p>
+    <p>Cancel \(m\) and solve for the circular velocity:</p>
     <div class="formula">
-      \[ 2\langle K \rangle + \langle W \rangle = 0 \]
+      \[ v(r) = \sqrt{\frac{GM(r)}{r}} \]
     </div>
-    <p>The system is bound when total energy \(E = K + W < 0\). If \(2K < |W|\), the system contracts; if \(2K > |W|\), it expands. Equilibrium is the balance point.</p>
+    <p>Each body is initialized at this velocity. If \(v < v(r)\), gravity wins and the orbit decays inward. If \(v > v(r)\), centrifugal force wins and the body escapes. The disk you see is the balance point.</p>
     <p>Integrated with leapfrog (St&ouml;rmer&ndash;Verlet), a symplectic scheme. Cost per step: \(\mathcal{O}(N^2)\). Color encodes velocity magnitude.</p>
   </div>
 </section>
