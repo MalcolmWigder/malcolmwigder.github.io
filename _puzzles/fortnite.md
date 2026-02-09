@@ -120,25 +120,25 @@ Assuming you figured it out. Good job.
   }
 
   function runMC(walk) {
-    var results = [];
+    var points = [], maxY = 0;
     for (var n = 1; n <= MAX_N; n++) {
-      var vals = [];
-      for (var t = 0; t < TRIALS; t++) vals.push(simulate(n, walk));
-      vals.sort(function(a,b){return a-b;});
-      results.push(vals[Math.floor(TRIALS * 0.99)]);
+      for (var t = 0; t < TRIALS; t++) {
+        var r = simulate(n, walk);
+        points.push(n, r);
+        if (r > maxY) maxY = r;
+      }
     }
-    return results;
+    return { pts: points, maxY: maxY };
   }
 
-  /* ── shared plot drawing ── */
-  function drawPlot(canvasId, results) {
+  /* ── shared scatter plot ── */
+  function drawPlot(canvasId, data) {
     var pc = document.getElementById(canvasId), ctx = pc.getContext('2d');
     var pw = pc.width, ph = pc.height;
     var pad = {l:50, r:16, t:16, b:40};
     var gw = pw - pad.l - pad.r, gh = ph - pad.t - pad.b;
-    var maxY = 0;
-    for (var i = 0; i < results.length; i++) if (results[i] > maxY) maxY = results[i];
-    maxY = Math.ceil(maxY * 1.12) || 1;
+    var maxY = Math.ceil(data.maxY * 1.1) || 1;
+    var pts = data.pts;
 
     function gx(n) { return pad.l + ((n-1) / (MAX_N-1)) * gw; }
     function gy(v) { return pad.t + gh - (v / maxY) * gh; }
@@ -147,7 +147,8 @@ Assuming you figured it out. Good job.
     ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+gh); ctx.lineTo(pad.l+gw, pad.t+gh); ctx.stroke();
 
     ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-    for (var n = 1; n <= 100; n += 20) {
+    var xStep = MAX_N <= 100 ? 20 : 100;
+    for (var n = xStep; n <= MAX_N; n += xStep) {
       var x = gx(n);
       ctx.beginPath(); ctx.moveTo(x, pad.t+gh); ctx.lineTo(x, pad.t+gh+4); ctx.stroke();
       ctx.fillText(n, x, pad.t+gh+16);
@@ -162,16 +163,14 @@ Assuming you figured it out. Good job.
       ctx.fillText(v, pad.l-8, y+4);
     }
     ctx.save(); ctx.translate(14, pad.t + gh/2); ctx.rotate(-Math.PI/2);
-    ctx.textAlign = 'center'; ctx.fillText('storms (99th pct)', 0, 0);
+    ctx.textAlign = 'center'; ctx.fillText('storms to total death', 0, 0);
     ctx.restore();
 
-    ctx.strokeStyle = '#555'; ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    for (var i = 0; i < results.length; i++) {
-      var x = gx(i+1), y = gy(results[i]);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    // scatter
+    ctx.fillStyle = 'rgba(30,90,160,0.04)';
+    for (var i = 0; i < pts.length; i += 2) {
+      ctx.fillRect(gx(pts[i]) - 0.5, gy(pts[i+1]) - 0.5, 1.5, 1.5);
     }
-    ctx.stroke();
   }
 
   drawPlot('plot1', runMC(false));
