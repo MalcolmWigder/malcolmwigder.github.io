@@ -105,22 +105,6 @@ status: open
     white-space: pre;
   }
 
-  .legend {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 2;
-    display: none;
-  }
-  .legend-label {
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2px;
-  }
-
   @media (max-width: 640px) {
     .panel-inner { max-width: 100%; padding: 24px; font-size: 13.5px; }
     .intro-inner h1 { font-size: 32px; }
@@ -130,16 +114,12 @@ status: open
 <canvas id="sim"></canvas>
 
 <div class="stats" id="stats"></div>
-<div class="legend" id="legend">
-  <canvas id="legend-bar" width="100" height="6"></canvas>
-  <div class="legend-label"><span>slow</span><span>fast</span></div>
-</div>
 
 <section class="panel intro-panel" data-mode="intro">
   <div class="panel-inner intro-inner">
     <h1>N-Body</h1>
-    <p>Gravitational dynamics from first principles.</p>
-    <p class="sub">scroll</p>
+    <p>Gravitational dynamics from first principles. from my Cosmology Final Project</p>
+    <p class="sub">Scroll</p>
   </div>
 </section>
 
@@ -200,14 +180,26 @@ status: open
   </div>
 </section>
 
-<section class="panel intro-panel" data-mode="barneshut" style="min-height:40vh;"></section>
+<section class="panel" data-mode="collision">
+  <div class="panel-inner">
+    <h2>Galactic Collision</h2>
+    <p>Two self-gravitating disks on a bound trajectory. Each galaxy is a central mass surrounded by an orbiting population, initialized with circular Keplerian velocities.</p>
+    <p>As the galaxies approach, tidal forces distort both disks. The near side of each galaxy feels a stronger pull than the far side, stretching material into <em>tidal tails</em> and <em>bridges</em>:</p>
+    <div class="formula">
+      \[ \Delta\mathbf{a} \;\approx\; -\frac{2GM}{d^3}\,\delta\mathbf{r} \]
+    </div>
+    <p>where \(d\) is the inter-galactic separation and \(\delta\mathbf{r}\) the offset from a galaxy's center. The \(1/d^3\) scaling is the tidal term from a Taylor expansion of the gravitational field.</p>
+    <p>Energy is redistributed through <em>violent relaxation</em> (Lynden-Bell, 1967): the time-varying potential scrambles individual orbits on a crossing timescale, driving the merged remnant toward a quasi-equilibrium.</p>
+  </div>
+</section>
+
+<section class="panel intro-panel" data-mode="collision" style="min-height:40vh;"></section>
 
 <script>
 (function () {
   var canvas = document.getElementById('sim');
   var ctx = canvas.getContext('2d');
   var statsEl = document.getElementById('stats');
-  var legendEl = document.getElementById('legend');
 
   function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   window.addEventListener('resize', resize);
@@ -224,12 +216,6 @@ status: open
     var a = CMAP[i], b = CMAP[i + 1];
     return 'rgb(' + (a[0]+(b[0]-a[0])*f|0) + ',' + (a[1]+(b[1]-a[1])*f|0) + ',' + (a[2]+(b[2]-a[2])*f|0) + ')';
   }
-  // draw legend gradient
-  (function () {
-    var lc = document.getElementById('legend-bar').getContext('2d');
-    for (var x = 0; x < 100; x++) { lc.fillStyle = heat(x / 99); lc.fillRect(x, 0, 1, 6); }
-  })();
-
   /* ── state ── */
   var G = 1, EPS = 4, bodies = [];
   var mode = '', dt = 0.1, substeps = 4, trail = 0.12, view = 700, drawTree = false;
@@ -276,8 +262,27 @@ status: open
     dt = 0.08; substeps = 5; trail = 0.1; view = 700; drawTree = false;
   }
   function initBH() {
-    diskBodies(400);
+    diskBodies(800);
     dt = 0.08; substeps = 5; trail = 0.13; view = 700; drawTree = true;
+  }
+  function galaxy(cx, cy, cvx, cvy, Mc, n) {
+    bodies.push(B(cx, cy, cvx, cvy, Mc));
+    for (var i = 0; i < n; i++) {
+      var r = 15 + Math.random() * 110;
+      var a = Math.random() * 2 * Math.PI;
+      var vc = Math.sqrt(G * Mc / r);
+      bodies.push(B(
+        cx + r * Math.cos(a), cy + r * Math.sin(a),
+        cvx - vc * Math.sin(a) + (Math.random() - 0.5) * 0.4,
+        cvy + vc * Math.cos(a) + (Math.random() - 0.5) * 0.4,
+        0.6 + Math.random() * 2));
+    }
+  }
+  function initCollision() {
+    bodies = [];
+    galaxy(-200, -50, 0.9, 0.25, 5000, 200);
+    galaxy( 200,  50, -0.9, -0.25, 5000, 200);
+    dt = 0.1; substeps = 5; trail = 0.04; view = 800; drawTree = false;
   }
 
   /* ── direct O(n²) forces ── */
@@ -349,7 +354,7 @@ status: open
   }
 
   /* ── leapfrog integrator ── */
-  function forces() { if (mode === 'barneshut') forcesBH(); else forcesDirect(); }
+  function forces() { if (mode === 'barneshut' || mode === 'collision') forcesBH(); else forcesDirect(); }
   function step() {
     var i, b, hdt = dt * 0.5;
     for (i = 0; i < bodies.length; i++) { b = bodies[i]; b.vx += b.ax * hdt; b.vy += b.ay * hdt; }
@@ -396,29 +401,30 @@ status: open
     }
 
     var many = bodies.length > 10;
-    legendEl.style.display = many ? 'block' : 'none';
 
     if (many) {
-      // compute vmax from orbiting bodies
+      // compute vmax from light bodies
       var vmax = 0;
-      for (var i = 1; i < bodies.length; i++) {
+      for (var i = 0; i < bodies.length; i++) {
+        if (bodies[i].m > 100) continue;
         var v2 = bodies[i].vx * bodies[i].vx + bodies[i].vy * bodies[i].vy;
         if (v2 > vmax) vmax = v2;
       }
       vmax = Math.sqrt(vmax) || 1;
-      // central body
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.beginPath();
-      ctx.arc(sx(bodies[0].x), sy(bodies[0].y), 2.5, 0, 6.2832);
-      ctx.fill();
-      // orbiting bodies
-      for (var i = 1; i < bodies.length; i++) {
+      for (var i = 0; i < bodies.length; i++) {
         var b = bodies[i];
-        var v = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        ctx.fillStyle = heat(v / vmax);
-        ctx.beginPath();
-        ctx.arc(sx(b.x), sy(b.y), 1.4, 0, 6.2832);
-        ctx.fill();
+        if (b.m > 100) {
+          ctx.fillStyle = 'rgba(255,255,255,0.8)';
+          ctx.beginPath();
+          ctx.arc(sx(b.x), sy(b.y), 2.5, 0, 6.2832);
+          ctx.fill();
+        } else {
+          var v = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          ctx.fillStyle = heat(v / vmax);
+          ctx.beginPath();
+          ctx.arc(sx(b.x), sy(b.y), 1.4, 0, 6.2832);
+          ctx.fill();
+        }
       }
     } else {
       // few bodies: white with glow
@@ -440,7 +446,7 @@ status: open
     }
 
     // stats
-    var label = mode === 'barneshut' ? 'Barnes-Hut  O(N log N)' : 'direct  O(N\u00B2)';
+    var label = (mode === 'barneshut' || mode === 'collision') ? 'Barnes-Hut  O(N log N)' : 'direct  O(N\u00B2)';
     if (mode === 'two' || mode === 'three' || mode === 'intro') label = 'direct';
     statsEl.textContent = 'n = ' + bodies.length + '\n' + label + '\nstep  ' + stepMs.toFixed(2) + ' ms';
   }
@@ -456,6 +462,7 @@ status: open
     else if (m === 'three') initThree();
     else if (m === 'nbody') initN();
     else if (m === 'barneshut') initBH();
+    else if (m === 'collision') initCollision();
     forces();
   }
 
