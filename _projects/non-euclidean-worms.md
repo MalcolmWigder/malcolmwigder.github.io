@@ -4,606 +4,591 @@ summary: Worms, but on curved surfaces
 date: 2025-08-01
 layout: default
 status: closed
-published: false
+published: true
 ---
 
 <style>
-  body > main {
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  header {
-    position: relative;
-    z-index: 10;
-  }
+  body > main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  header { position: relative; z-index: 10; }
 
-  .game-wrap {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
+  .gw { max-width: 900px; margin: 0 auto; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  h1.pt { font-size: 32px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.5px; color: #e8e8e8; }
+  .ps { color: #888; font-size: 14px; margin: 0 0 24px; }
 
-  h1.page-title {
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-    letter-spacing: -0.5px;
-  }
-  .page-sub {
-    color: #888;
-    font-size: 14px;
-    margin: 0 0 24px 0;
-  }
+  .mode-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .mode-btn { padding: 8px 16px; border: 1.5px solid #333; border-radius: 8px; background: #1a1a1a; color: #999; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .mode-btn:hover { border-color: #666; color: #ccc; }
+  .mode-btn.active { background: #e8e8e8; color: #111; border-color: #e8e8e8; }
+  .sc { margin-left: auto; font-size: 14px; font-weight: 600; color: #aaa; }
 
-  /* tabs */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 2px solid #eee;
-    margin-bottom: 24px;
-  }
-  .tab-btn {
-    padding: 10px 20px;
-    background: none;
-    border: none;
-    font-size: 14px;
-    font-weight: 500;
-    color: #999;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: color 0.15s;
-  }
-  .tab-btn:hover { color: #333; }
-  .tab-btn.active { color: #111; border-bottom-color: #111; }
+  .cw { position: relative; width: 100%; max-width: 600px; margin: 0 auto; }
+  .cw canvas { width: 100%; display: block; border-radius: 4px; }
+  .ov { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.75); z-index: 2; border-radius: 4px; }
+  .ov.hidden { display: none; }
+  .ov h2 { margin: 0 0 8px; font-size: 22px; color: #e8e8e8; }
+  .ov p { margin: 0 0 16px; color: #888; font-size: 13px; }
+  .pbtn { padding: 10px 28px; background: #e8e8e8; color: #111; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; }
+  .pbtn:hover { background: #fff; }
+  .inst { text-align: center; color: #666; font-size: 12px; margin-top: 10px; }
+  .k-display { text-align: center; color: #888; font-size: 13px; margin-top: 6px; font-family: 'SF Mono', monospace; }
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .math-section { max-width: 700px; margin: 60px auto 0; padding: 0 20px 40px; line-height: 1.8; color: #bbb; font-size: 15px; }
+  .math-section h2 { font-size: 20px; margin: 36px 0 12px; font-weight: 600; color: #e8e8e8; }
+  .math-section h2:first-child { margin-top: 0; }
+  .math-section p { margin: 0 0 14px; }
+  .math-section ul { margin: 0 0 14px; padding-left: 20px; }
+  .math-section li { margin-bottom: 6px; }
+  .formula { background: #1a1a1a; padding: 12px 16px; border-radius: 6px; margin: 12px 0; overflow-x: auto; border: 1px solid #222; }
 
-  /* game controls */
-  .mode-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .mode-btn {
-    padding: 8px 18px;
-    border: 1.5px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .mode-btn:hover { border-color: #999; }
-  .mode-btn.active { background: #111; color: #fff; border-color: #111; }
-
-  .score-display {
-    margin-left: auto;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  /* canvas */
-  .game-canvas-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    max-width: 600px;
-    margin: 0 auto;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1.5px solid #eee;
-    background: #fafafa;
-  }
-  .game-canvas-wrap canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .game-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.85);
-    z-index: 2;
-  }
-  .game-overlay.hidden { display: none; }
-  .game-overlay h2 { margin: 0 0 8px; font-size: 22px; }
-  .game-overlay p { margin: 0 0 16px; color: #666; font-size: 14px; }
-  .play-btn {
-    padding: 10px 28px;
-    background: #111;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .play-btn:hover { background: #333; }
-
-  .instructions {
-    text-align: center;
-    color: #aaa;
-    font-size: 12px;
-    margin-top: 12px;
-  }
-
-  /* math tab */
-  .math-content {
-    max-width: 700px;
-    line-height: 1.8;
-    color: #333;
-    font-size: 15px;
-  }
-  .math-content h2 {
-    font-size: 20px;
-    margin: 32px 0 12px;
-    font-weight: 600;
-  }
-  .math-content h2:first-child { margin-top: 0; }
-  .math-content p { margin: 0 0 14px; }
-  .math-content .formula {
-    background: #f6f6f6;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin: 12px 0;
-    overflow-x: auto;
-  }
-
-  @media (max-width: 600px) {
-    .game-wrap { padding: 12px; }
-    .tab-btn { padding: 8px 12px; font-size: 13px; }
-  }
+  @media (max-width: 600px) { .gw { padding: 12px; } }
 </style>
 
-<div class="game-wrap">
-  <h1 class="page-title">Non-Euclidean Worms</h1>
-  <p class="page-sub">The classic snake game on flat, spherical, and hyperbolic surfaces.</p>
+<div class="gw">
+  <h1 class="pt">Non-Euclidean Worms</h1>
+  <p class="ps">The classic snake game on flat, spherical, hyperbolic, and dynamically curved surfaces.</p>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="game">Play</button>
-    <button class="tab-btn" data-tab="math">The Math</button>
+  <div class="mode-row">
+    <button class="mode-btn active" data-mode="euclidean">Euclidean</button>
+    <button class="mode-btn" data-mode="spherical">Spherical</button>
+    <button class="mode-btn" data-mode="hyperbolic">Hyperbolic</button>
+    <button class="mode-btn" data-mode="dynamic">Dynamic</button>
+    <span class="sc">Score: <span id="score">0</span></span>
   </div>
 
-  <!-- GAME TAB -->
-  <div class="tab-content active" id="tab-game">
-    <div class="mode-row">
-      <button class="mode-btn active" data-mode="normal">Euclidean</button>
-      <button class="mode-btn" data-mode="spherical">Spherical</button>
-      <button class="mode-btn" data-mode="hyperbolic">Hyperbolic</button>
-      <span class="score-display">Score: <span id="score">0</span></span>
-    </div>
-
-    <div class="game-canvas-wrap">
-      <canvas id="game"></canvas>
-      <div class="game-overlay" id="overlay">
-        <h2 id="overlay-title">Non-Euclidean Worms</h2>
-        <p id="overlay-msg">Arrow keys or WASD to move</p>
-        <button class="play-btn" id="play-btn">Play</button>
-      </div>
-    </div>
-    <p class="instructions">Arrow keys / WASD to steer. The geometry changes how the board wraps.</p>
-  </div>
-
-  <!-- MATH TAB -->
-  <div class="tab-content" id="tab-math">
-    <div class="math-content">
-      <h2>Euclidean Geometry (Flat)</h2>
-      <p>The standard snake board lives on a flat torus: when you leave one edge you reappear on the opposite side. The grid is a quotient of \(\mathbb{R}^2\) by a lattice. Distances follow the familiar metric:</p>
-      <div class="formula">
-        \[ ds^2 = dx^2 + dy^2 \]
-      </div>
-      <p>The board has zero Gaussian curvature everywhere. Parallel lines stay parallel, the angles of a triangle sum to exactly \(\pi\), and the circumference of a circle of radius \(r\) is \(2\pi r\). The wrapping identification means the topology is \(T^2 = S^1 \times S^1\), but the local geometry is flat.</p>
-
-      <h2>Spherical Geometry (Positive Curvature)</h2>
-      <p>In the spherical mode, the board is mapped onto \(S^2\). We use an equirectangular projection: columns correspond to longitude \(\phi \in [0, 2\pi)\) and rows to latitude \(\theta \in [0, \pi]\).</p>
-      <div class="formula">
-        \[ ds^2 = d\theta^2 + \sin^2\!\theta \; d\phi^2 \]
-      </div>
-      <p>At the equator, cells have their full width. Near the poles, the factor \(\sin\theta \to 0\), so longitude lines converge. A step east or west near a pole covers a much larger angular distance. This means:</p>
-      <ul>
-        <li>Moving horizontally near the poles wraps around very quickly</li>
-        <li>The "top" and "bottom" edges are single points (poles), not edges at all</li>
-        <li>Triangles have angle sums exceeding \(\pi\) &mdash; the excess equals the area divided by \(R^2\)</li>
-      </ul>
-      <p>The Gaussian curvature is constant and positive: \(K = 1/R^2\). In the game, this manifests as the horizontal wrapping distance shrinking as you approach the poles, and the snake appearing to accelerate laterally near them.</p>
-
-      <h2>Hyperbolic Geometry (Negative Curvature)</h2>
-      <p>The hyperbolic mode uses the Poincar&eacute; disk model. The board is a disk of radius 1 in the Euclidean plane, but distances are warped: near the boundary, a small Euclidean step covers a huge hyperbolic distance.</p>
-      <div class="formula">
-        \[ ds^2 = \frac{4(dx^2 + dy^2)}{(1 - x^2 - y^2)^2} \]
-      </div>
-      <p>The conformal factor \(\lambda = 2/(1 - r^2)\) blows up as \(r \to 1\), meaning the boundary is infinitely far away in the hyperbolic metric. The Gaussian curvature is constant and negative: \(K = -1\).</p>
-      <p>Consequences for gameplay:</p>
-      <ul>
-        <li>There is exponentially more space near the edges &mdash; the area of a hyperbolic disk of radius \(\rho\) is \(2\pi(\cosh\rho - 1)\), which grows as \(\sim \pi e^{\rho}\)</li>
-        <li>Parallel lines diverge: two geodesics that start nearly parallel will spread apart exponentially</li>
-        <li>Triangles have angle sums less than \(\pi\) &mdash; the deficit equals the area times \(|K|\)</li>
-      </ul>
-      <p>In the game, the grid cells near the center are large and easy to navigate, but the playable area expands enormously toward the boundary. The apple can hide in the vast hyperbolic outskirts.</p>
-
-      <h2>Gauss-Bonnet Theorem</h2>
-      <p>All three geometries are unified by the Gauss-Bonnet theorem. For a closed surface \(M\):</p>
-      <div class="formula">
-        \[ \int_M K \, dA = 2\pi \, \chi(M) \]
-      </div>
-      <p>where \(\chi\) is the Euler characteristic. For the sphere \(\chi = 2\), for the torus \(\chi = 0\), and for hyperbolic surfaces of genus \(g \geq 2\), \(\chi = 2 - 2g\). The total curvature is a topological invariant &mdash; it doesn't care about how you bend the surface, only about the number of holes.</p>
+  <div class="cw">
+    <canvas id="game" width="600" height="600"></canvas>
+    <div class="ov" id="overlay">
+      <h2 id="ot">Non-Euclidean Worms</h2>
+      <p id="om">Arrow keys to move</p>
+      <button class="pbtn" id="pbtn">Play</button>
     </div>
   </div>
+  <p class="inst" id="inst">Arrow keys to steer.</p>
+  <p class="k-display hidden" id="kdisp"></p>
+</div>
+
+<div class="math-section">
+  <h2>Euclidean Geometry (Flat)</h2>
+  <p>The Euclidean board lives inside a disk. The worm moves at constant speed in a flat plane. Distances follow the familiar metric:</p>
+  <div class="formula">\[ ds^2 = dx^2 + dy^2 \]</div>
+  <p>Gaussian curvature is zero everywhere. Parallel lines stay parallel, triangle angles sum to exactly \(\pi\), and the circumference of a circle of radius \(r\) is \(2\pi r\). The boundary is a hard wall.</p>
+
+  <h2>Spherical Geometry (Positive Curvature)</h2>
+  <p>The spherical board maps the game onto \(S^2\), rendered via orthographic projection. The worm travels along lines of latitude and longitude. The metric on the sphere is:</p>
+  <div class="formula">\[ ds^2 = d\theta^2 + \sin^2\!\theta \; d\phi^2 \]</div>
+  <p>At the equator, cells have full width. Near the poles, the factor \(\sin\theta \to 0\) and longitude lines converge. The poles are singularities &mdash; reaching one kills the worm. The Gaussian curvature is constant: \(K = 1/R^2\).</p>
+  <ul>
+    <li>Triangles have angle sums exceeding \(\pi\); the excess equals \(\text{Area}/R^2\)</li>
+    <li>The "top" and "bottom" are single points (poles), not edges</li>
+    <li>Use WASD to rotate the camera, arrow keys to steer the worm</li>
+  </ul>
+
+  <h2>Hyperbolic Geometry (Negative Curvature)</h2>
+  <p>The hyperbolic board uses the Poincar&eacute; disk model. The worm moves continuously forward; steer with left/right arrows. The metric is:</p>
+  <div class="formula">\[ ds^2 = \frac{4(dx^2 + dy^2)}{(1 - x^2 - y^2)^2} \]</div>
+  <p>The conformal factor \(\lambda = 2/(1 - r^2)\) diverges at the boundary, meaning the boundary is infinitely far away in hyperbolic distance. Curvature is constant: \(K = -1\).</p>
+  <ul>
+    <li>Exponentially more space near the edge &mdash; area of a hyperbolic disk of radius \(\rho\) is \(2\pi(\cosh\rho - 1) \sim \pi e^{\rho}\)</li>
+    <li>Geodesics are arcs of circles orthogonal to the boundary</li>
+    <li>Triangles have angle sums less than \(\pi\)</li>
+  </ul>
+
+  <h2>Dynamic Curvature</h2>
+  <p>The dynamic mode starts flat (\(K=0\)) and changes curvature when the worm eats colored apples. Blue apples decrease \(K\) (more hyperbolic), yellow apples increase \(K\) (more spherical), and red apples just grow the worm.</p>
+  <p>The movement metric interpolates continuously. For \(K < 0\) the worm slows near the boundary (hyperbolic drag); for \(K > 0\) it accelerates (spherical expansion). Concentric circles on the board show equal geodesic distances, which compress or expand as curvature shifts.</p>
+  <div class="formula">\[ r_{\text{euclidean}} = \begin{cases} \tanh(\rho/2) / \sqrt{|K|} & K < 0 \\ \rho & K = 0 \\ \tan(\rho/2) / \sqrt{K} & K > 0 \end{cases} \]</div>
+
+  <h2>Gauss-Bonnet Theorem</h2>
+  <p>All three constant-curvature geometries are unified by the Gauss-Bonnet theorem. For a closed surface \(M\):</p>
+  <div class="formula">\[ \int_M K \, dA = 2\pi \, \chi(M) \]</div>
+  <p>where \(\chi\) is the Euler characteristic. For the sphere \(\chi = 2\), for the torus \(\chi = 0\), and for hyperbolic surfaces of genus \(g \geq 2\), \(\chi = 2 - 2g\). The total curvature is a topological invariant.</p>
 </div>
 
 <script>
-(function() {
-  // --- Tabs ---
-  document.querySelectorAll('.tab-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
+(function(){
+var canvas = document.getElementById('game');
+var ctx = canvas.getContext('2d');
+var overlay = document.getElementById('overlay');
+var otEl = document.getElementById('ot');
+var omEl = document.getElementById('om');
+var pbtnEl = document.getElementById('pbtn');
+var scoreEl = document.getElementById('score');
+var instEl = document.getElementById('inst');
+var kdispEl = document.getElementById('kdisp');
+
+var W = 600, H = 600, CX = 300, CY = 300, CR = 270;
+
+function resizeCanvas(){
+  var wrap = canvas.parentElement;
+  var w = wrap.clientWidth;
+  canvas.style.width = w + 'px';
+  canvas.style.height = w + 'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// State
+var mode = 'euclidean';
+var snake, snakeDir, snakeSpeed, score, running, gameOver, food, K;
+var phi0, lam0; // sphere camera
+var SEG_R = 4, FOOD_R = 6;
+var appleType, appleTypes = {normal:'#e74c3c', blue:'#3498db', yellow:'#f1c40f'};
+
+// Mode buttons
+document.querySelectorAll('.mode-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.mode-btn').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    mode = b.dataset.mode;
+    resetGame();
   });
+});
 
-  // --- Mode buttons ---
-  var currentMode = 'normal';
-  document.querySelectorAll('.mode-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      currentMode = btn.dataset.mode;
-      resetGame();
-    });
-  });
+function resetGame(){
+  snake = [];
+  score = 0; scoreEl.textContent = '0';
+  gameOver = false; running = false;
+  K = 0; appleType = 'normal';
+  phi0 = -Math.PI/6; lam0 = 0;
 
-  // --- Canvas setup ---
-  var canvas = document.getElementById('game');
-  var ctx = canvas.getContext('2d');
-  var overlay = document.getElementById('overlay');
-  var overlayTitle = document.getElementById('overlay-title');
-  var overlayMsg = document.getElementById('overlay-msg');
-  var playBtn = document.getElementById('play-btn');
-  var scoreEl = document.getElementById('score');
-
-  var GRID = 20; // grid cells per side
-  var SIZE;
-
-  function resizeCanvas() {
-    var wrap = canvas.parentElement;
-    var w = wrap.clientWidth;
-    canvas.width = w;
-    canvas.height = w;
-    SIZE = w / GRID;
-  }
-  resizeCanvas();
-  window.addEventListener('resize', function() {
-    resizeCanvas();
-    if (!running) drawState();
-  });
-
-  // --- Game state ---
-  var snake, dir, nextDir, apple, score, running, gameOver, tickTimer;
-  var TICK_MS = 120;
-
-  function resetGame() {
-    var mid = Math.floor(GRID / 2);
-    snake = [{x: mid, y: mid}, {x: mid - 1, y: mid}, {x: mid - 2, y: mid}];
-    dir = {x: 1, y: 0};
-    nextDir = {x: 1, y: 0};
-    score = 0;
-    scoreEl.textContent = '0';
-    gameOver = false;
-    running = false;
-    clearInterval(tickTimer);
-    overlay.classList.remove('hidden');
-    overlayTitle.textContent = 'Non-Euclidean Worms';
-    overlayMsg.textContent = 'Arrow keys or WASD to move';
-    playBtn.textContent = 'Play';
-    drawState();
+  if(mode === 'euclidean'){
+    snakeSpeed = 3; snakeDir = 0;
+    for(var i=0;i<15;i++) snake.push([CX - i*snakeSpeed, CY]);
+    instEl.textContent = 'Arrow keys to steer.';
+    kdispEl.classList.add('hidden');
+  } else if(mode === 'spherical'){
+    snakeSpeed = 0.02; snakeDir = 0;
+    // phi, lambda pairs; start on equator
+    for(var i=0;i<20;i++) snake.push([0, i*0.08]);
+    instEl.textContent = 'Arrows to steer worm. WASD to rotate camera.';
+    kdispEl.classList.add('hidden');
+  } else if(mode === 'hyperbolic'){
+    snakeSpeed = 0.015; snakeDir = Math.PI/2;
+    for(var i=0;i<15;i++) snake.push([0, -i*0.02]);
+    instEl.textContent = 'Left/Right to steer. Auto-moves forward.';
+    kdispEl.classList.add('hidden');
+  } else {
+    snakeSpeed = 0.015; snakeDir = Math.PI/2; K = 0;
+    for(var i=0;i<15;i++) snake.push([0, -i*0.02]);
+    instEl.textContent = 'Left/Right to steer. Eat colored apples to bend space.';
+    kdispEl.classList.remove('hidden');
+    kdispEl.textContent = 'K = 0.00 (flat)';
   }
 
-  function placeApple() {
-    var occupied = {};
-    for (var i = 0; i < snake.length; i++) {
-      occupied[snake[i].x + ',' + snake[i].y] = true;
-    }
-    var free = [];
-    if (currentMode === 'hyperbolic') {
-      // only place apples within the disk
-      var center = GRID / 2;
-      var radius = GRID / 2 - 0.5;
-      for (var x = 0; x < GRID; x++) {
-        for (var y = 0; y < GRID; y++) {
-          var dx = x - center + 0.5, dy = y - center + 0.5;
-          if (dx * dx + dy * dy < radius * radius && !occupied[x + ',' + y]) {
-            free.push({x: x, y: y});
-          }
-        }
-      }
-    } else {
-      for (var x = 0; x < GRID; x++) {
-        for (var y = 0; y < GRID; y++) {
-          if (!occupied[x + ',' + y]) free.push({x: x, y: y});
-        }
-      }
-    }
-    if (free.length === 0) return;
-    apple = free[Math.floor(Math.random() * free.length)];
+  food = null;
+  overlay.classList.remove('hidden');
+  otEl.textContent = mode.charAt(0).toUpperCase()+mode.slice(1) + ' Worms';
+  omEl.textContent = instEl.textContent;
+  pbtnEl.textContent = 'Play';
+  draw();
+}
+
+function spawnFood(){
+  if(mode === 'euclidean'){
+    var a = Math.random()*Math.PI*2, r = Math.random()*(CR-20);
+    food = [CX + r*Math.cos(a), CY + r*Math.sin(a)];
+    appleType = 'normal';
+  } else if(mode === 'spherical'){
+    food = [Math.random()*Math.PI - Math.PI/2, Math.random()*Math.PI*2];
+    appleType = 'normal';
+  } else if(mode === 'hyperbolic'){
+    var r = Math.pow(Math.random(), 0.3) * 0.85;
+    var a = Math.random()*Math.PI*2;
+    food = [r*Math.cos(a), r*Math.sin(a)];
+    appleType = 'normal';
+  } else {
+    var r = Math.pow(Math.random(), 0.3) * 0.85;
+    var a = Math.random()*Math.PI*2;
+    food = [r*Math.cos(a), r*Math.sin(a)];
+    var rn = Math.random();
+    appleType = rn < 0.4 ? 'normal' : rn < 0.7 ? 'blue' : 'yellow';
+  }
+}
+
+function startGame(){
+  if(gameOver) resetGame();
+  running = true;
+  overlay.classList.add('hidden');
+  spawnFood();
+  draw();
+  requestAnimationFrame(loop);
+}
+pbtnEl.addEventListener('click', startGame);
+
+// Input
+var keys = {};
+document.addEventListener('keydown', function(e){
+  keys[e.key] = true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.key)>=0) e.preventDefault();
+  if(!running && !gameOver) startGame();
+});
+document.addEventListener('keyup', function(e){ keys[e.key] = false; });
+
+// Sphere helpers
+var sphereAxis = 'lon', sphereConst = 0;
+function projSphere(phi, lam){
+  var x = CR * Math.cos(phi) * Math.sin(lam - lam0);
+  var y = CR * (Math.cos(phi0)*Math.sin(phi) - Math.sin(phi0)*Math.cos(phi)*Math.cos(lam - lam0));
+  var z = CR * Math.cos(phi) * Math.cos(lam - lam0);
+  return [CX + x, CY - y, z];
+}
+
+function p2s(x, y){ return [CX + x*CR, CY - y*CR]; }
+
+// Game loop
+var lastTime = 0;
+function loop(ts){
+  if(!running) return;
+  var dt = Math.min(ts - lastTime, 33);
+  lastTime = ts;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function update(){
+  if(mode === 'euclidean') updateEuc();
+  else if(mode === 'spherical') updateSphere();
+  else if(mode === 'hyperbolic') updateHyp();
+  else updateDynamic();
+}
+
+function updateEuc(){
+  if(keys['ArrowUp'] && snakeDir !== Math.PI/2) snakeDir = -Math.PI/2;
+  if(keys['ArrowDown'] && snakeDir !== -Math.PI/2) snakeDir = Math.PI/2;
+  if(keys['ArrowLeft'] && snakeDir !== 0) snakeDir = Math.PI;
+  if(keys['ArrowRight'] && snakeDir !== Math.PI) snakeDir = 0;
+
+  var hx = snake[0][0] + Math.cos(snakeDir)*snakeSpeed;
+  var hy = snake[0][1] + Math.sin(snakeDir)*snakeSpeed;
+
+  // boundary
+  var dx = hx-CX, dy = hy-CY;
+  if(dx*dx+dy*dy > CR*CR){ endGame(); return; }
+  // self collision
+  for(var i=10;i<snake.length;i++){
+    var sx=snake[i][0]-hx, sy=snake[i][1]-hy;
+    if(sx*sx+sy*sy < SEG_R*SEG_R*3){ endGame(); return; }
   }
 
-  // --- Wrapping logic per geometry ---
-  function wrapNormal(pos) {
-    return {
-      x: ((pos.x % GRID) + GRID) % GRID,
-      y: ((pos.y % GRID) + GRID) % GRID
-    };
-  }
-
-  function wrapSpherical(pos) {
-    var x = pos.x, y = pos.y;
-    // vertical: bounce at poles and flip longitude
-    if (y < 0) { y = 0; x = x + Math.floor(GRID / 2); }
-    else if (y >= GRID) { y = GRID - 1; x = x + Math.floor(GRID / 2); }
-    // horizontal: wrap normally (longitude)
-    x = ((x % GRID) + GRID) % GRID;
-    return {x: x, y: y};
-  }
-
-  function wrapHyperbolic(pos) {
-    // Poincare disk: no wrapping, boundary is a wall
-    return {x: pos.x, y: pos.y};
-  }
-
-  function isInsideDisk(pos) {
-    var center = GRID / 2;
-    var radius = GRID / 2 - 0.5;
-    var dx = pos.x - center + 0.5, dy = pos.y - center + 0.5;
-    return dx * dx + dy * dy < radius * radius;
-  }
-
-  function wrap(pos) {
-    if (currentMode === 'spherical') return wrapSpherical(pos);
-    if (currentMode === 'hyperbolic') return wrapHyperbolic(pos);
-    return wrapNormal(pos);
-  }
-
-  // --- Tick ---
-  function tick() {
-    dir = nextDir;
-    var head = snake[0];
-    var raw = {x: head.x + dir.x, y: head.y + dir.y};
-    var npos = wrap(raw);
-
-    // collision check
-    if (currentMode === 'hyperbolic' && !isInsideDisk(npos)) {
-      endGame(); return;
-    }
-    for (var i = 0; i < snake.length; i++) {
-      if (snake[i].x === npos.x && snake[i].y === npos.y) {
-        endGame(); return;
-      }
-    }
-
-    snake.unshift(npos);
-
-    if (npos.x === apple.x && npos.y === apple.y) {
-      score++;
-      scoreEl.textContent = score;
-      placeApple();
+  snake.unshift([hx, hy]);
+  // food check
+  if(food){
+    var fx=food[0]-hx, fy=food[1]-hy;
+    if(fx*fx+fy*fy < (FOOD_R+SEG_R)*(FOOD_R+SEG_R)){
+      score++; scoreEl.textContent = score;
+      spawnFood();
     } else {
       snake.pop();
     }
+  } else snake.pop();
+}
 
-    drawState();
+function updateSphere(){
+  // camera
+  if(keys['w']||keys['W']) phi0 = Math.max(-Math.PI/2, phi0 - 0.03);
+  if(keys['s']||keys['S']) phi0 = Math.min(Math.PI/2, phi0 + 0.03);
+  if(keys['a']||keys['A']) lam0 -= 0.03;
+  if(keys['d']||keys['D']) lam0 += 0.03;
+
+  // worm direction
+  if(keys['ArrowUp']){ sphereAxis='lat'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowDown']){ sphereAxis='lat'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowLeft']){ sphereAxis='lon'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
+  if(keys['ArrowRight']){ sphereAxis='lon'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
+
+  var hp = snake[0][0], hl = snake[0][1];
+  if(sphereAxis === 'lon'){
+    hp = sphereConst;
+    hl = (hl + snakeSpeed) % (Math.PI*2);
+    if(hl<0) hl += Math.PI*2;
+  } else {
+    hp = hp + snakeSpeed;
+    hl = sphereConst;
   }
 
-  function endGame() {
-    running = false;
-    gameOver = true;
-    clearInterval(tickTimer);
-    overlay.classList.remove('hidden');
-    overlayTitle.textContent = 'Game Over';
-    overlayMsg.textContent = 'Score: ' + score;
-    playBtn.textContent = 'Retry';
+  // pole death
+  if(Math.abs(hp) >= Math.PI/2 - 0.03){ endGame(); return; }
+
+  snake.unshift([hp, hl]);
+  // food
+  if(food){
+    var dp = snake[0][0]-food[0], dl = snake[0][1]-food[1];
+    if(dp*dp+dl*dl < 0.02){
+      score++; scoreEl.textContent = score;
+      spawnFood();
+    } else snake.pop();
+  } else snake.pop();
+}
+
+function updateHyp(){
+  if(keys['ArrowLeft']) snakeDir += 0.06;
+  if(keys['ArrowRight']) snakeDir -= 0.06;
+
+  var hx = snake[0][0], hy = snake[0][1];
+  var r2 = hx*hx + hy*hy;
+  var norm = (1 - r2); norm = norm*norm;
+  var dx = snakeSpeed * Math.cos(snakeDir) * norm;
+  var dy = snakeSpeed * Math.sin(snakeDir) * norm;
+  var nx = hx+dx, ny = hy+dy;
+
+  if(nx*nx+ny*ny >= 0.98){ endGame(); return; }
+  // self
+  for(var i=8;i<snake.length;i++){
+    var sx=snake[i][0]-nx, sy=snake[i][1]-ny;
+    if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
   }
 
-  function startGame() {
-    if (gameOver) {
-      var mid = Math.floor(GRID / 2);
-      snake = [{x: mid, y: mid}, {x: mid - 1, y: mid}, {x: mid - 2, y: mid}];
-      dir = {x: 1, y: 0};
-      nextDir = {x: 1, y: 0};
-      score = 0;
-      scoreEl.textContent = '0';
-      gameOver = false;
-    }
-    running = true;
-    overlay.classList.add('hidden');
-    placeApple();
-    drawState();
-    tickTimer = setInterval(tick, TICK_MS);
+  snake.unshift([nx, ny]);
+  if(food){
+    var fx=food[0]-nx, fy=food[1]-ny;
+    if(fx*fx+fy*fy < 0.003){
+      score++; scoreEl.textContent = score;
+      spawnFood();
+    } else snake.pop();
+  } else snake.pop();
+}
+
+function updateDynamic(){
+  if(keys['ArrowLeft']) snakeDir += 0.06;
+  if(keys['ArrowRight']) snakeDir -= 0.06;
+
+  var hx = snake[0][0], hy = snake[0][1];
+  var r2 = hx*hx + hy*hy;
+  var norm;
+  if(K < 0) norm = (1 - r2) / Math.abs(K || 1);
+  else if(K > 0) norm = (1 + r2) / (K || 1);
+  else norm = 1;
+
+  var dx = snakeSpeed * Math.cos(snakeDir) * norm;
+  var dy = snakeSpeed * Math.sin(snakeDir) * norm;
+  var nx = hx+dx, ny = hy+dy;
+
+  if(nx*nx+ny*ny >= 0.98 && K <= 0){ endGame(); return; }
+  // wrap for spherical-ish
+  if(K > 0 && nx*nx+ny*ny >= 0.98){
+    nx = -nx*0.9; ny = -ny*0.9;
   }
 
-  playBtn.addEventListener('click', startGame);
-
-  // --- Input ---
-  document.addEventListener('keydown', function(e) {
-    var key = e.key;
-    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
-      if (dir.y !== 1) nextDir = {x: 0, y: -1};
-      e.preventDefault();
-    } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
-      if (dir.y !== -1) nextDir = {x: 0, y: 1};
-      e.preventDefault();
-    } else if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
-      if (dir.x !== 1) nextDir = {x: -1, y: 0};
-      e.preventDefault();
-    } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
-      if (dir.x !== -1) nextDir = {x: 1, y: 0};
-      e.preventDefault();
-    }
-    // start on key if overlay showing and not game over prompt
-    if (!running && !gameOver) {
-      startGame();
-    }
-  });
-
-  // --- Drawing ---
-  function drawState() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (currentMode === 'hyperbolic') {
-      drawHyperbolicBoard();
-    } else if (currentMode === 'spherical') {
-      drawSphericalBoard();
-    } else {
-      drawNormalBoard();
-    }
+  for(var i=8;i<snake.length;i++){
+    var sx=snake[i][0]-nx, sy=snake[i][1]-ny;
+    if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
   }
 
-  function drawNormalBoard() {
-    // grid
-    for (var x = 0; x < GRID; x++) {
-      for (var y = 0; y < GRID; y++) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? '#f0f0f0' : '#e8e8e8';
-        ctx.fillRect(x * SIZE, y * SIZE, SIZE, SIZE);
-      }
-    }
-    drawSnakeAndApple(function(pos) {
-      return {px: pos.x * SIZE, py: pos.y * SIZE, s: SIZE};
-    });
+  snake.unshift([nx, ny]);
+  if(food){
+    var fx=food[0]-nx, fy=food[1]-ny;
+    if(fx*fx+fy*fy < 0.003){
+      if(appleType === 'normal') { /* just grow */ }
+      else if(appleType === 'blue') K = Math.max(K - 0.5, -3);
+      else if(appleType === 'yellow') K = Math.min(K + 0.5, 3);
+      score++; scoreEl.textContent = score;
+      var label = K < -0.1 ? 'hyperbolic' : K > 0.1 ? 'spherical' : 'flat';
+      kdispEl.textContent = 'K = ' + K.toFixed(2) + ' (' + label + ')';
+      spawnFood();
+    } else snake.pop();
+  } else snake.pop();
+}
+
+function endGame(){
+  running = false; gameOver = true;
+  overlay.classList.remove('hidden');
+  otEl.textContent = 'Game Over';
+  omEl.textContent = 'Score: ' + score;
+  pbtnEl.textContent = 'Retry';
+}
+
+// Drawing
+function draw(){
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0,0,W,H);
+
+  if(mode === 'euclidean') drawEuc();
+  else if(mode === 'spherical') drawSphere();
+  else if(mode === 'hyperbolic') drawHyp();
+  else drawDynamic();
+}
+
+function drawEuc(){
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.5;
+  for(var i=0;i<=W;i+=40){
+    ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(W,i); ctx.stroke();
   }
-
-  function drawSphericalBoard() {
-    // draw grid with varying cell widths based on latitude
-    for (var y = 0; y < GRID; y++) {
-      var theta = (y + 0.5) / GRID * Math.PI;
-      var widthFactor = Math.sin(theta);
-      var cellW = SIZE * widthFactor;
-      var totalW = cellW * GRID;
-      var offsetX = (canvas.width - totalW) / 2;
-      for (var x = 0; x < GRID; x++) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? '#eef0f8' : '#e2e6f2';
-        ctx.fillRect(offsetX + x * cellW, y * SIZE, cellW, SIZE);
-      }
-    }
-    // apple and snake with spherical projection
-    drawSnakeAndApple(function(pos) {
-      var theta = (pos.y + 0.5) / GRID * Math.PI;
-      var widthFactor = Math.sin(theta);
-      var cellW = SIZE * widthFactor;
-      var totalW = cellW * GRID;
-      var offsetX = (canvas.width - totalW) / 2;
-      return {px: offsetX + pos.x * cellW, py: pos.y * SIZE, s: Math.max(cellW, SIZE * 0.3), sy: SIZE};
-    });
+  // boundary
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(80,80,255,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+  // food
+  if(food){
+    ctx.beginPath(); ctx.arc(food[0],food[1],FOOD_R,0,Math.PI*2);
+    ctx.fillStyle = '#e74c3c'; ctx.fill();
   }
+  // snake
+  drawSnakeEuc();
+}
 
-  function drawHyperbolicBoard() {
-    // draw Poincare disk
-    var center = canvas.width / 2;
-    var radius = center - SIZE * 0.5;
-
-    // disk background
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(center, center, radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#f4f0ee';
+function drawSnakeEuc(){
+  for(var i=snake.length-1;i>=0;i--){
+    var t = i/snake.length;
+    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
+    ctx.beginPath(); ctx.arc(snake[i][0], snake[i][1], SEG_R, 0, Math.PI*2);
+    ctx.fillStyle = 'rgb('+r+','+g+','+b+')';
     ctx.fill();
-    ctx.restore();
+  }
+}
 
-    // grid cells inside disk with hyperbolic scaling
-    var gcenter = GRID / 2;
-    var gradius = GRID / 2 - 0.5;
-    for (var x = 0; x < GRID; x++) {
-      for (var y = 0; y < GRID; y++) {
-        var dx = x - gcenter + 0.5, dy = y - gcenter + 0.5;
-        var r2 = (dx * dx + dy * dy) / (gradius * gradius);
-        if (r2 < 1) {
-          // map grid to disk via Poincare-like scaling
-          var px = center + (dx / gradius) * radius;
-          var py = center + (dy / gradius) * radius;
-          var scale = 1 - r2;
-          var cs = SIZE * Math.max(scale, 0.25);
-          ctx.fillStyle = (x + y) % 2 === 0 ? '#ede8e4' : '#e4ddd8';
-          ctx.fillRect(px - cs/2, py - cs/2, cs, cs);
-        }
-      }
-    }
+function drawSphere(){
+  // filled sphere bg
+  var grad = ctx.createRadialGradient(CX-40, CY-40, 10, CX, CY, CR);
+  grad.addColorStop(0, '#1a1a40');
+  grad.addColorStop(1, '#000010');
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle = grad; ctx.fill();
 
-    // disk border
+  // lat lines
+  for(var li=-5;li<=5;li++){
+    var phi = li * Math.PI/12;
     ctx.beginPath();
-    ctx.arc(center, center, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 1.5;
+    for(var j=0;j<=360;j++){
+      var lam = j*Math.PI/180;
+      var p = projSphere(phi, lam);
+      if(j===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+    }
+    var bright = 40;
+    ctx.strokeStyle = 'rgba(60,60,180,0.25)'; ctx.lineWidth = 0.5; ctx.stroke();
+  }
+  // lon lines
+  for(var li=0;li<12;li++){
+    var lam = li * Math.PI/6;
+    ctx.beginPath();
+    for(var j=-90;j<=90;j++){
+      var phi = j*Math.PI/180;
+      var p = projSphere(phi, lam);
+      if(j===-90) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+    }
+    ctx.strokeStyle = 'rgba(60,60,180,0.25)'; ctx.lineWidth = 0.5; ctx.stroke();
+  }
+
+  // food
+  if(food){
+    var fp = projSphere(food[0], food[1]);
+    ctx.beginPath(); ctx.arc(fp[0], fp[1], 5, 0, Math.PI*2);
+    ctx.fillStyle = '#e74c3c'; ctx.fill();
+  }
+
+  // snake
+  for(var i=snake.length-1;i>=0;i--){
+    var p = projSphere(snake[i][0], snake[i][1]);
+    var t = i/snake.length;
+    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
+    ctx.beginPath(); ctx.arc(p[0], p[1], 3.5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+  }
+
+  // boundary
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(100,100,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+}
+
+function drawHyp(){
+  // disk bg
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle = '#0d0d0d'; ctx.fill();
+
+  // geodesic grid (radial lines + orthogonal arcs)
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
+  for(var a=0;a<360;a+=45){
+    var rad = a*Math.PI/180;
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + Math.cos(rad)*CR, CY - Math.sin(rad)*CR);
     ctx.stroke();
-
-    drawSnakeAndApple(function(pos) {
-      var dx = pos.x - gcenter + 0.5, dy = pos.y - gcenter + 0.5;
-      var r2 = (dx * dx + dy * dy) / (gradius * gradius);
-      var px = center + (dx / gradius) * radius;
-      var py = center + (dy / gradius) * radius;
-      var scale = 1 - r2;
-      var cs = SIZE * Math.max(scale, 0.25);
-      return {px: px - cs/2, py: py - cs/2, s: cs};
-    });
+  }
+  // concentric hyperbolic circles
+  for(var ri=1;ri<=8;ri++){
+    var rh = ri * 0.4;
+    var re = Math.tanh(rh/2);
+    if(re >= 1) break;
+    ctx.beginPath(); ctx.arc(CX, CY, re*CR, 0, Math.PI*2);
+    var alpha = 0.12 * (1 - re);
+    ctx.strokeStyle = 'rgba(255,255,255,'+alpha+')'; ctx.stroke();
   }
 
-  function drawSnakeAndApple(mapFn) {
-    // apple
-    if (apple) {
-      var ap = mapFn(apple);
-      var as = ap.s || SIZE;
-      var asy = ap.sy || as;
-      ctx.fillStyle = '#e74c3c';
-      ctx.beginPath();
-      ctx.arc(ap.px + as/2, ap.py + asy/2, Math.max(as * 0.35, 4), 0, Math.PI * 2);
-      ctx.fill();
-    }
+  // boundary
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // snake
-    for (var i = snake.length - 1; i >= 0; i--) {
-      var sp = mapFn(snake[i]);
-      var ss = sp.s || SIZE;
-      var ssy = sp.sy || ss;
-      var t = i / snake.length;
-      var r = Math.round(40 + t * 20);
-      var g = Math.round(180 - t * 80);
-      var b = Math.round(60 + t * 20);
-      ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-      var pad = ss * 0.08;
-      var padY = ssy * 0.08;
-      ctx.beginPath();
-      var rx = Math.max((ss - pad * 2) * 0.2, 2);
-      roundRect(ctx, sp.px + pad, sp.py + padY, ss - pad * 2, ssy - padY * 2, rx);
-      ctx.fill();
-    }
+  // food
+  if(food){
+    var fs = p2s(food[0], food[1]);
+    ctx.beginPath(); ctx.arc(fs[0], fs[1], 5, 0, Math.PI*2);
+    ctx.fillStyle = '#e74c3c'; ctx.fill();
   }
 
-  function roundRect(ctx, x, y, w, h, r) {
-    r = Math.min(r, w / 2, h / 2);
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
+  // snake
+  for(var i=snake.length-1;i>=0;i--){
+    var s = p2s(snake[i][0], snake[i][1]);
+    var t = i/snake.length;
+    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
+    ctx.beginPath(); ctx.arc(s[0], s[1], 3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+  }
+}
+
+function drawDynamic(){
+  // disk bg
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle = '#0d0d0d'; ctx.fill();
+
+  // concentric circles based on curvature
+  ctx.lineWidth = 0.5;
+  for(var ri=1;ri<=12;ri++){
+    var rh = ri * 0.3;
+    var re;
+    if(K < -0.01) re = Math.tanh(rh/2) / Math.sqrt(Math.abs(K));
+    else if(K > 0.01) re = Math.min(Math.tan(rh/2) / Math.sqrt(K), 2);
+    else re = rh / 2;
+    if(re >= 1) break;
+    ctx.beginPath(); ctx.arc(CX, CY, re*CR, 0, Math.PI*2);
+    var alpha = 0.1 * (1 - re);
+    // color by curvature
+    if(K < -0.1) ctx.strokeStyle = 'rgba(80,80,255,'+alpha+')';
+    else if(K > 0.1) ctx.strokeStyle = 'rgba(255,200,50,'+alpha+')';
+    else ctx.strokeStyle = 'rgba(255,255,255,'+alpha+')';
+    ctx.stroke();
   }
 
-  // --- Init ---
-  resetGame();
+  // radial lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+  for(var a=0;a<360;a+=45){
+    var rad = a*Math.PI/180;
+    ctx.beginPath(); ctx.moveTo(CX,CY);
+    ctx.lineTo(CX+Math.cos(rad)*CR, CY-Math.sin(rad)*CR); ctx.stroke();
+  }
+
+  // boundary
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // food
+  if(food){
+    var fs = p2s(food[0], food[1]);
+    ctx.beginPath(); ctx.arc(fs[0], fs[1], 5, 0, Math.PI*2);
+    ctx.fillStyle = appleTypes[appleType]; ctx.fill();
+  }
+
+  // snake
+  for(var i=snake.length-1;i>=0;i--){
+    var s = p2s(snake[i][0], snake[i][1]);
+    var t = i/snake.length;
+    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
+    ctx.beginPath(); ctx.arc(s[0], s[1], 3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+  }
+}
+
+resetGame();
 })();
 </script>
