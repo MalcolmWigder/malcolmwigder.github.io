@@ -1,10 +1,11 @@
 ---
 title: Non-Euclidean Worms
 summary: Worms, but on curved surfaces
-date: 2025-08-01
+date: 2024-12-01
 layout: default
 status: closed
 published: true
+image: worms.png
 ---
 
 <style>
@@ -152,23 +153,23 @@ function resetGame(){
   phi0 = -Math.PI/6; lam0 = 0;
 
   if(mode === 'euclidean'){
-    snakeSpeed = 3; snakeDir = 0;
+    snakeSpeed = 1.5; snakeDir = 0;
     for(var i=0;i<15;i++) snake.push([CX - i*snakeSpeed, CY]);
     instEl.textContent = 'Arrow keys to steer.';
     kdispEl.classList.add('hidden');
   } else if(mode === 'spherical'){
-    snakeSpeed = 0.02; snakeDir = 0;
+    snakeSpeed = 0.01; snakeDir = 0;
     // phi, lambda pairs; start on equator
     for(var i=0;i<20;i++) snake.push([0, i*0.08]);
     instEl.textContent = 'Arrows to steer worm. WASD to rotate camera.';
     kdispEl.classList.add('hidden');
   } else if(mode === 'hyperbolic'){
-    snakeSpeed = 0.015; snakeDir = Math.PI/2;
+    snakeSpeed = 0.008; snakeDir = Math.PI/2;
     for(var i=0;i<15;i++) snake.push([0, -i*0.02]);
     instEl.textContent = 'Left/Right to steer. Auto-moves forward.';
     kdispEl.classList.add('hidden');
   } else {
-    snakeSpeed = 0.015; snakeDir = Math.PI/2; K = 0;
+    snakeSpeed = 0.008; snakeDir = Math.PI/2; K = 0;
     for(var i=0;i<15;i++) snake.push([0, -i*0.02]);
     instEl.textContent = 'Left/Right to steer. Eat colored apples to bend space.';
     kdispEl.classList.remove('hidden');
@@ -332,7 +333,10 @@ function updateHyp(){
   var dy = snakeSpeed * Math.sin(snakeDir) * norm;
   var nx = hx+dx, ny = hy+dy;
 
-  if(nx*nx+ny*ny >= 0.98){ endGame(); return; }
+  if(nx*nx+ny*ny >= 0.98){
+    var sc = 0.97 / Math.sqrt(nx*nx+ny*ny);
+    nx *= sc; ny *= sc;
+  }
   // self
   for(var i=8;i<snake.length;i++){
     var sx=snake[i][0]-nx, sy=snake[i][1]-ny;
@@ -442,8 +446,8 @@ function drawSnakeEuc(){
 function drawSphere(){
   // filled sphere bg
   var grad = ctx.createRadialGradient(CX-40, CY-40, 10, CX, CY, CR);
-  grad.addColorStop(0, '#1a1a40');
-  grad.addColorStop(1, '#000010');
+  grad.addColorStop(0, '#3a3a70');
+  grad.addColorStop(1, '#1a1a40');
   ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
   ctx.fillStyle = grad; ctx.fill();
 

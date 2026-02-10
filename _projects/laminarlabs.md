@@ -1,7 +1,7 @@
 ---
 title: Laminar Labs
 summary: Agentic Software for Industrial Maintenance.
-date: 2025-07-21
+date: 2026-01-21
 layout: default
 image: /assets/laminar.png
 status: open
