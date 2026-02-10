@@ -292,8 +292,8 @@ function updateSphere(){
   if(keys['d']||keys['D']) lam0 += 0.03;
 
   // worm direction
-  if(keys['ArrowUp']){ sphereAxis='lat'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
-  if(keys['ArrowDown']){ sphereAxis='lat'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowUp']){ sphereAxis='lat'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowDown']){ sphereAxis='lat'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
   if(keys['ArrowLeft']){ sphereAxis='lon'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
   if(keys['ArrowRight']){ sphereAxis='lon'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
 
