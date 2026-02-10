@@ -45,7 +45,7 @@ published: true
 
 <div class="gw">
   <h1 class="pt">Non-Euclidean Worms</h1>
-  <p class="ps">The classic snake game on flat, spherical, hyperbolic, and dynamically curved surfaces.</p>
+  <p class="ps">The classic snake game on flat, spherical, hyperbolic, and dynamically curved surfaces. From my Differential Geometry Final Project.</p>
 
   <div class="mode-row">
     <button class="mode-btn active" data-mode="euclidean">Euclidean</button>
@@ -168,7 +168,7 @@ function resetGame(){
     instEl.textContent = 'Left/Right to steer. Auto-moves forward.';
     kdispEl.classList.add('hidden');
   } else {
-    snakeSpeed = 0.008; snakeDir = Math.PI/2; K = 0;
+    snakeSpeed = 0.004; snakeDir = Math.PI/2; K = 0;
     for(var i=0;i<15;i++) snake.push([0, -i*0.02]);
     instEl.textContent = 'Left/Right to steer. Eat colored apples to bend space.';
     kdispEl.classList.remove('hidden');
@@ -292,10 +292,10 @@ function updateSphere(){
   if(keys['d']||keys['D']) lam0 += 0.03;
 
   // worm direction
-  if(keys['ArrowUp']){ sphereAxis='lat'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
-  if(keys['ArrowDown']){ sphereAxis='lat'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
-  if(keys['ArrowLeft']){ sphereAxis='lon'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
-  if(keys['ArrowRight']){ sphereAxis='lon'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
+  if(keys['ArrowUp']){ sphereAxis='lat'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowDown']){ sphereAxis='lat'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][1]; }
+  if(keys['ArrowLeft']){ sphereAxis='lon'; snakeSpeed = -Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
+  if(keys['ArrowRight']){ sphereAxis='lon'; snakeSpeed = Math.abs(snakeSpeed); sphereConst = snake[0][0]; }
 
   var hp = snake[0][0], hl = snake[0][1];
   if(sphereAxis === 'lon'){
