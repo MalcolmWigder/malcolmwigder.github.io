@@ -5,7 +5,6 @@ date: 2024-12-01
 layout: default
 status: closed
 published: true
-image: worms.png
 ---
 
 <style>
@@ -230,7 +229,7 @@ var sphereAxis = 'lon', sphereConst = 0;
 function projSphere(phi, lam){
   var x = CR * Math.cos(phi) * Math.sin(lam - lam0);
   var y = CR * (Math.cos(phi0)*Math.sin(phi) - Math.sin(phi0)*Math.cos(phi)*Math.cos(lam - lam0));
-  var z = CR * Math.cos(phi) * Math.cos(lam - lam0);
+  var z = Math.sin(phi0)*Math.sin(phi) + Math.cos(phi0)*Math.cos(phi)*Math.cos(lam - lam0);
   return [CX + x, CY - y, z];
 }
 
@@ -340,7 +339,7 @@ function updateHyp(){
   // self
   for(var i=8;i<snake.length;i++){
     var sx=snake[i][0]-nx, sy=snake[i][1]-ny;
-    if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
+    //if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
   }
 
   snake.unshift([nx, ny]);
@@ -376,7 +375,7 @@ function updateDynamic(){
 
   for(var i=8;i<snake.length;i++){
     var sx=snake[i][0]-nx, sy=snake[i][1]-ny;
-    if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
+    //if(sx*sx+sy*sy < 0.0004){ endGame(); return; }
   }
 
   snake.unshift([nx, ny]);
@@ -451,44 +450,62 @@ function drawSphere(){
   ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
   ctx.fillStyle = grad; ctx.fill();
 
-  // lat lines
+  // lat lines - front face only
   for(var li=-5;li<=5;li++){
     var phi = li * Math.PI/12;
-    ctx.beginPath();
+    var drawing = false;
     for(var j=0;j<=360;j++){
       var lam = j*Math.PI/180;
       var p = projSphere(phi, lam);
-      if(j===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+      if(p[2] <= 0){ if(drawing){ ctx.stroke(); drawing = false; } continue; }
+      if(!drawing){ ctx.beginPath(); ctx.moveTo(p[0],p[1]); drawing = true;
+        ctx.strokeStyle = 'rgba(100,100,220,0.35)'; ctx.lineWidth = 0.6; }
+      else ctx.lineTo(p[0],p[1]);
     }
-    var bright = 40;
-    ctx.strokeStyle = 'rgba(60,60,180,0.25)'; ctx.lineWidth = 0.5; ctx.stroke();
+    if(drawing) ctx.stroke();
   }
-  // lon lines
+  // lon lines - front face only
   for(var li=0;li<12;li++){
     var lam = li * Math.PI/6;
-    ctx.beginPath();
+    var drawing = false;
     for(var j=-90;j<=90;j++){
       var phi = j*Math.PI/180;
       var p = projSphere(phi, lam);
-      if(j===-90) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]);
+      if(p[2] <= 0){ if(drawing){ ctx.stroke(); drawing = false; } continue; }
+      if(!drawing){ ctx.beginPath(); ctx.moveTo(p[0],p[1]); drawing = true;
+        ctx.strokeStyle = 'rgba(100,100,220,0.35)'; ctx.lineWidth = 0.6; }
+      else ctx.lineTo(p[0],p[1]);
     }
-    ctx.strokeStyle = 'rgba(60,60,180,0.25)'; ctx.lineWidth = 0.5; ctx.stroke();
+    if(drawing) ctx.stroke();
   }
 
-  // food
+  // specular highlight
+  var hgrad = ctx.createRadialGradient(CX-60, CY-60, 5, CX-40, CY-40, CR*0.6);
+  hgrad.addColorStop(0, 'rgba(180,180,255,0.15)');
+  hgrad.addColorStop(1, 'rgba(180,180,255,0)');
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle = hgrad; ctx.fill();
+
+  // food - depth modulated
   if(food){
     var fp = projSphere(food[0], food[1]);
-    ctx.beginPath(); ctx.arc(fp[0], fp[1], 5, 0, Math.PI*2);
-    ctx.fillStyle = '#e74c3c'; ctx.fill();
+    if(fp[2] > 0){
+      var fa = 0.4 + 0.6*fp[2];
+      ctx.beginPath(); ctx.arc(fp[0], fp[1], 3+4*fp[2], 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(231,76,60,'+fa.toFixed(2)+')'; ctx.fill();
+    }
   }
 
-  // snake
+  // snake - depth modulated
   for(var i=snake.length-1;i>=0;i--){
     var p = projSphere(snake[i][0], snake[i][1]);
+    if(p[2] <= 0) continue;
     var t = i/snake.length;
+    var sz = 2 + 3*p[2];
+    var alpha = 0.3 + 0.7*p[2];
     var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
-    ctx.beginPath(); ctx.arc(p[0], p[1], 3.5, 0, Math.PI*2);
-    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+    ctx.beginPath(); ctx.arc(p[0], p[1], sz, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba('+r+','+g+','+b+','+alpha.toFixed(2)+')'; ctx.fill();
   }
 
   // boundary
@@ -496,100 +513,177 @@ function drawSphere(){
   ctx.strokeStyle = 'rgba(100,100,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
 }
 
-function drawHyp(){
-  // disk bg
-  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
-  ctx.fillStyle = '#0d0d0d'; ctx.fill();
+function drawGeodesicArc(t1, t2, color){
+  var dt = t2 - t1;
+  while(dt > Math.PI) dt -= 2*Math.PI;
+  while(dt < -Math.PI) dt += 2*Math.PI;
+  if(Math.abs(dt) < 0.15 || Math.abs(Math.abs(dt) - Math.PI) < 0.15) return;
+  var m = t1 + dt/2, hd = dt/2;
+  var cd = Math.cos(hd);
+  var ocx = Math.cos(m)/cd, ocy = Math.sin(m)/cd;
+  var arcR = Math.abs(Math.tan(hd));
+  var p1x = Math.cos(t1)-ocx, p1y = Math.sin(t1)-ocy;
+  var p2x = Math.cos(t2)-ocx, p2y = Math.sin(t2)-ocy;
+  var a1 = Math.atan2(p1y, p1x), a2 = Math.atan2(p2y, p2x);
+  var da = a2-a1; while(da>Math.PI)da-=2*Math.PI; while(da<-Math.PI)da+=2*Math.PI;
+  ctx.beginPath();
+  var S=24;
+  for(var i=0;i<=S;i++){
+    var a=a1+da*i/S;
+    var px=(ocx+arcR*Math.cos(a))*CR+CX;
+    var py=CY-(ocy+arcR*Math.sin(a))*CR;
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle=color; ctx.lineWidth=0.5; ctx.stroke();
+}
 
-  // geodesic grid (radial lines + orthogonal arcs)
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
-  for(var a=0;a<360;a+=45){
-    var rad = a*Math.PI/180;
+function drawHyp(){
+  // Poincare disk bg
+  var grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, CR);
+  grad.addColorStop(0, '#0e0e1a');
+  grad.addColorStop(0.8, '#080812');
+  grad.addColorStop(1, '#04040a');
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Geodesic tessellation arcs
+  var N=24, offsets=[3,5,8,11];
+  for(var i=0;i<N;i++){
+    for(var oi=0;oi<offsets.length;oi++){
+      drawGeodesicArc(i*Math.PI*2/N, ((i+offsets[oi])%N)*Math.PI*2/N, 'rgba(60,60,160,0.12)');
+    }
+  }
+  // Diameters
+  ctx.strokeStyle='rgba(60,60,160,0.1)'; ctx.lineWidth=0.5;
+  for(var a=0;a<12;a++){
+    var rad=a*Math.PI/12;
     ctx.beginPath();
-    ctx.moveTo(CX, CY);
-    ctx.lineTo(CX + Math.cos(rad)*CR, CY - Math.sin(rad)*CR);
+    ctx.moveTo(CX+Math.cos(rad)*CR, CY-Math.sin(rad)*CR);
+    ctx.lineTo(CX-Math.cos(rad)*CR, CY+Math.sin(rad)*CR);
     ctx.stroke();
   }
-  // concentric hyperbolic circles
+
+  // Concentric hyperbolic circles
   for(var ri=1;ri<=8;ri++){
-    var rh = ri * 0.4;
-    var re = Math.tanh(rh/2);
-    if(re >= 1) break;
-    ctx.beginPath(); ctx.arc(CX, CY, re*CR, 0, Math.PI*2);
-    var alpha = 0.12 * (1 - re);
-    ctx.strokeStyle = 'rgba(255,255,255,'+alpha+')'; ctx.stroke();
+    var rh=ri*0.4, re=Math.tanh(rh/2);
+    if(re>=1) break;
+    ctx.beginPath(); ctx.arc(CX,CY,re*CR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(80,80,200,'+(0.12*(1-re))+')'; ctx.lineWidth=0.5; ctx.stroke();
   }
 
-  // boundary
+  // Boundary glow
   ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle='rgba(80,80,255,0.5)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX,CY,CR+2,0,Math.PI*2);
+  ctx.strokeStyle='rgba(80,80,255,0.12)'; ctx.lineWidth=5; ctx.stroke();
 
-  // food
+  // food with glow
   if(food){
-    var fs = p2s(food[0], food[1]);
-    ctx.beginPath(); ctx.arc(fs[0], fs[1], 5, 0, Math.PI*2);
-    ctx.fillStyle = '#e74c3c'; ctx.fill();
+    var fs=p2s(food[0],food[1]);
+    var fg=ctx.createRadialGradient(fs[0],fs[1],0,fs[0],fs[1],15);
+    fg.addColorStop(0,'rgba(231,76,60,0.3)'); fg.addColorStop(1,'rgba(231,76,60,0)');
+    ctx.beginPath(); ctx.arc(fs[0],fs[1],15,0,Math.PI*2);
+    ctx.fillStyle=fg; ctx.fill();
+    ctx.beginPath(); ctx.arc(fs[0],fs[1],5,0,Math.PI*2);
+    ctx.fillStyle='#e74c3c'; ctx.fill();
   }
 
-  // snake
+  // snake with head glow
   for(var i=snake.length-1;i>=0;i--){
-    var s = p2s(snake[i][0], snake[i][1]);
-    var t = i/snake.length;
-    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
-    ctx.beginPath(); ctx.arc(s[0], s[1], 3, 0, Math.PI*2);
-    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+    var s=p2s(snake[i][0],snake[i][1]);
+    var t=i/snake.length;
+    var r=Math.round(30+t*30), g=Math.round(220-t*120), b=Math.round(60+t*30);
+    if(i===0){
+      var hg=ctx.createRadialGradient(s[0],s[1],0,s[0],s[1],10);
+      hg.addColorStop(0,'rgba('+r+','+g+','+b+',0.3)');
+      hg.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      ctx.beginPath(); ctx.arc(s[0],s[1],10,0,Math.PI*2);
+      ctx.fillStyle=hg; ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(s[0],s[1],3,0,Math.PI*2);
+    ctx.fillStyle='rgb('+r+','+g+','+b+')'; ctx.fill();
   }
 }
 
 function drawDynamic(){
-  // disk bg
+  // Background shifts with curvature
+  var grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, CR);
+  var ki = Math.min(Math.abs(K)/3, 1);
+  if(K < -0.1){
+    grad.addColorStop(0, 'rgb('+Math.round(14+ki*10)+','+Math.round(10+ki*5)+','+Math.round(26+ki*20)+')');
+    grad.addColorStop(1, 'rgb('+Math.round(4+ki*8)+',4,'+Math.round(10+ki*15)+')');
+  } else if(K > 0.1){
+    grad.addColorStop(0, 'rgb('+Math.round(20+ki*15)+','+Math.round(16+ki*10)+',10)');
+    grad.addColorStop(1, 'rgb('+Math.round(8+ki*10)+','+Math.round(6+ki*5)+',4)');
+  } else {
+    grad.addColorStop(0, '#111118'); grad.addColorStop(1, '#080810');
+  }
   ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
-  ctx.fillStyle = '#0d0d0d'; ctx.fill();
+  ctx.fillStyle = grad; ctx.fill();
 
-  // concentric circles based on curvature
+  // Concentric circles
   ctx.lineWidth = 0.5;
   for(var ri=1;ri<=12;ri++){
-    var rh = ri * 0.3;
-    var re;
+    var rh = ri * 0.3, re;
     if(K < -0.01) re = Math.tanh(rh/2) / Math.sqrt(Math.abs(K));
     else if(K > 0.01) re = Math.min(Math.tan(rh/2) / Math.sqrt(K), 2);
     else re = rh / 2;
     if(re >= 1) break;
     ctx.beginPath(); ctx.arc(CX, CY, re*CR, 0, Math.PI*2);
-    var alpha = 0.1 * (1 - re);
-    // color by curvature
+    var alpha = 0.15 * (1 - re);
     if(K < -0.1) ctx.strokeStyle = 'rgba(80,80,255,'+alpha+')';
-    else if(K > 0.1) ctx.strokeStyle = 'rgba(255,200,50,'+alpha+')';
+    else if(K > 0.1) ctx.strokeStyle = 'rgba(255,180,40,'+alpha+')';
     else ctx.strokeStyle = 'rgba(255,255,255,'+alpha+')';
     ctx.stroke();
   }
 
-  // radial lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
-  for(var a=0;a<360;a+=45){
-    var rad = a*Math.PI/180;
+  // Radial lines
+  var la = K < -0.1 ? 'rgba(60,60,180,0.06)' : K > 0.1 ? 'rgba(180,140,40,0.06)' : 'rgba(255,255,255,0.04)';
+  ctx.strokeStyle = la; ctx.lineWidth = 0.5;
+  for(var a=0;a<360;a+=30){
+    var rad=a*Math.PI/180;
     ctx.beginPath(); ctx.moveTo(CX,CY);
     ctx.lineTo(CX+Math.cos(rad)*CR, CY-Math.sin(rad)*CR); ctx.stroke();
   }
 
-  // boundary
+  // Boundary with curvature color
   ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
+  if(K < -0.1) ctx.strokeStyle='rgba(80,80,255,0.5)';
+  else if(K > 0.1) ctx.strokeStyle='rgba(255,180,40,0.5)';
+  else ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX,CY,CR+2,0,Math.PI*2);
+  if(K < -0.1) ctx.strokeStyle='rgba(80,80,255,0.1)';
+  else if(K > 0.1) ctx.strokeStyle='rgba(255,180,40,0.1)';
+  else ctx.strokeStyle='rgba(255,255,255,0.05)';
+  ctx.lineWidth=5; ctx.stroke();
 
-  // food
+  // food with glow
   if(food){
-    var fs = p2s(food[0], food[1]);
-    ctx.beginPath(); ctx.arc(fs[0], fs[1], 5, 0, Math.PI*2);
-    ctx.fillStyle = appleTypes[appleType]; ctx.fill();
+    var fs=p2s(food[0],food[1]);
+    var gc; if(appleType==='blue') gc='52,152,219'; else if(appleType==='yellow') gc='241,196,15'; else gc='231,76,60';
+    var fg=ctx.createRadialGradient(fs[0],fs[1],0,fs[0],fs[1],15);
+    fg.addColorStop(0,'rgba('+gc+',0.35)'); fg.addColorStop(1,'rgba('+gc+',0)');
+    ctx.beginPath(); ctx.arc(fs[0],fs[1],15,0,Math.PI*2);
+    ctx.fillStyle=fg; ctx.fill();
+    ctx.beginPath(); ctx.arc(fs[0],fs[1],5,0,Math.PI*2);
+    ctx.fillStyle=appleTypes[appleType]; ctx.fill();
   }
 
-  // snake
+  // snake with head glow
   for(var i=snake.length-1;i>=0;i--){
-    var s = p2s(snake[i][0], snake[i][1]);
-    var t = i/snake.length;
-    var r = Math.round(30+t*30), g = Math.round(220-t*120), b = Math.round(60+t*30);
-    ctx.beginPath(); ctx.arc(s[0], s[1], 3, 0, Math.PI*2);
-    ctx.fillStyle = 'rgb('+r+','+g+','+b+')'; ctx.fill();
+    var s=p2s(snake[i][0],snake[i][1]);
+    var t=i/snake.length;
+    var r=Math.round(30+t*30), g=Math.round(220-t*120), b=Math.round(60+t*30);
+    if(i===0){
+      var hg=ctx.createRadialGradient(s[0],s[1],0,s[0],s[1],10);
+      hg.addColorStop(0,'rgba('+r+','+g+','+b+',0.4)');
+      hg.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      ctx.beginPath(); ctx.arc(s[0],s[1],10,0,Math.PI*2);
+      ctx.fillStyle=hg; ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(s[0],s[1],3,0,Math.PI*2);
+    ctx.fillStyle='rgb('+r+','+g+','+b+')'; ctx.fill();
   }
 }
 
