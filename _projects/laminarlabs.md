@@ -3,6 +3,7 @@ title: Laminar Labs
 summary: Agentic Software for Industrial Maintenance.
 date: 2025-07-21
 layout: default
+image: /assets/laminar.png
 status: open
 external_url: https://laminarlabs.co
 note: a note on laminar labs
@@ -22,7 +23,7 @@ note: a note on laminar labs
   article p {
     font-size: 1.05em;
     margin-bottom: 1.2em;
-    color: #333;
+    color: #bbb;
   }
 </style>
 
