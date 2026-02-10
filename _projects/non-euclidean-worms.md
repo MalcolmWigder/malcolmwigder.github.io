@@ -4,6 +4,7 @@ summary: Worms, but on curved surfaces
 date: 2025-08-01
 layout: default
 status: closed
+published: false
 ---
 
 <style>
