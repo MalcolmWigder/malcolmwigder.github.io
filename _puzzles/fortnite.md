@@ -3,6 +3,7 @@ title: Fortnite!
 summary: Give this a try.
 date: 2025-07-11
 layout: default
+image: /assets/fortnite.png
 status: open
 published: true
 ---
@@ -22,7 +23,7 @@ Assuming you figured it out. Good job.
   </div>
 </div>
 
-<p> ii) Same setup, but before each storm every surviving player takes a step of at most &delta;=0.1 toward the center of the current safe zone. How does the answer change? </p>
+<p> ii) Same setup, but this time, the players may move up to 0.1 times the current radius toward the center. How does the answer change?  </p>
 
 <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin:32px 0;">
   <div>
@@ -46,11 +47,11 @@ Assuming you figured it out. Good job.
   function randDisk() { return randInDisk(0, 0, 1); }
   function dist(a, b) { var dx = a[0]-b[0], dy = a[1]-b[1]; return Math.sqrt(dx*dx+dy*dy); }
 
-  function moveToward(p, tx, ty) {
+  function moveToward(p, tx, ty, maxStep) {
     var dx = tx - p[0], dy = ty - p[1];
     var d = Math.sqrt(dx*dx + dy*dy);
-    if (d <= DELTA) return [tx, ty];
-    return [p[0] + dx/d*DELTA, p[1] + dy/d*DELTA];
+    if (d <= maxStep) return [tx, ty];
+    return [p[0] + dx/d*maxStep, p[1] + dy/d*maxStep];
   }
 
   /* ── drawing ── */
@@ -90,8 +91,9 @@ Assuming you figured it out. Good job.
     function step() {
       // walk toward current safe zone center
       if (walk && storm) {
+        var step = DELTA * stormR;
         for (var i = 0; i < N; i++) {
-          if (alive[i]) players[i] = moveToward(players[i], storm[0], storm[1]);
+          if (alive[i]) players[i] = moveToward(players[i], storm[0], storm[1], step);
         }
       }
       // new storm: contained within previous, radius halves
@@ -137,7 +139,8 @@ Assuming you figured it out. Good job.
       if (done) return rounds;
       // walk
       if (walk && sc) {
-        for (var i = 0; i < n; i++) { if (a[i]) ps[i] = moveToward(ps[i], sc[0], sc[1]); }
+        var step = DELTA * sr;
+        for (var i = 0; i < n; i++) { if (a[i]) ps[i] = moveToward(ps[i], sc[0], sc[1], step); }
       }
       // new storm
       var newR, nc;
