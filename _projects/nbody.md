@@ -120,7 +120,7 @@ status: closed
   <div class="panel-inner intro-inner">
     <h1>N-Body</h1>
     <p>Gravitational dynamics from first principles. from my Cosmology Final Project</p>
-    <p class="sub">Scroll</p>
+    <p>Please Scroll</p>
   </div>
 </section>
 
