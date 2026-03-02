@@ -5,6 +5,7 @@ date: 2024-12-01
 layout: default
 status: closed
 published: true
+image: /assets/worms.png
 ---
 
 <style>
