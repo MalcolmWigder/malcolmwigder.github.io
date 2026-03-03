@@ -1,6 +1,6 @@
 ---
 title: Basic Creatures
-summary: Hard one I reckon
+summary: Heating up
 date: 2026-03-02
 layout: default
 image: /assets/creature.png
@@ -34,7 +34,7 @@ Each **generation** runs three phases in order:
   <!-- Box 2: Purge -->
   <rect x="155" y="35" width="100" height="44" rx="5" fill="#1c1c1c" stroke="#3a3a3a" stroke-width="1.5"/>
   <text x="205" y="54" text-anchor="middle" fill="#ccc" font-size="12" font-family="-apple-system,sans-serif" font-weight="600">Purge</text>
-  <text x="205" y="70" text-anchor="middle" fill="#888" font-size="11" font-family="-apple-system,sans-serif">die w.p. 1 − x</text>
+  <text x="205" y="70" text-anchor="middle" fill="#888" font-size="11" font-family="-apple-system,sans-serif">p(death) = 1 − x</text>
 
   <!-- Arrow 2 -->
   <line x1="255" y1="57" x2="290" y2="57" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -42,7 +42,7 @@ Each **generation** runs three phases in order:
   <!-- Box 3: Starvation -->
   <rect x="292" y="35" width="110" height="44" rx="5" fill="#1c1c1c" stroke="#3a3a3a" stroke-width="1.5"/>
   <text x="347" y="54" text-anchor="middle" fill="#ccc" font-size="12" font-family="-apple-system,sans-serif" font-weight="600">Starvation</text>
-  <text x="347" y="70" text-anchor="middle" fill="#888" font-size="11" font-family="-apple-system,sans-serif">die w.p. x</text>
+  <text x="347" y="70" text-anchor="middle" fill="#888" font-size="11" font-family="-apple-system,sans-serif">p(death) = x</text>
 
   <!-- Arrow 3 -->
   <line x1="402" y1="57" x2="437" y2="57" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
