@@ -48,7 +48,7 @@ image: /assets/evolution.png
 
 <div class="ew">
   <h1 class="pt">Evolving Creatures</h1>
-  <p class="ps">A "creature" is a walk. Starting at the center it takes 1000 unit steps, turning at each step by an angle read cyclically from its <em>genome</em>. I score a creature by how many enclosed regions &mdash; <em>holes</em> &mdash; its path traps, then let a genetic algorithm breed the best ones. Hit Run and the random scribbles fill in over a few generations.</p>
+  <p class="ps">A "creature" is a walk. From the center it takes 1000 unit steps, turning each step by an angle read cyclically from its <em>genome</em>. I score it by how many regions (<em>holes</em>) the path encloses, then let a genetic algorithm breed the best ones. Hit Run; the scribbles fill in over a few generations.</p>
 
   <div class="ctrl">
     <button class="btn primary" id="run">Run</button>
@@ -83,24 +83,24 @@ image: /assets/evolution.png
   <h2>The genome</h2>
   <p>A genome is a fixed-length array of turn angles, here \(L = 128\) of them, each drawn uniformly from \(\left[-\tfrac{\pi}{4}, \tfrac{\pi}{4}\right]\). To grow the creature we keep a running heading \(\theta\) and a position \((x, y)\) starting at the center of a \(256 \times 256\) grid. At step \(s\) we read gene \(s \bmod L\), turn, and take one unit step:</p>
   <div class="formula">\[ \theta_{s} = \theta_{s-1} + g_{\,s \bmod L}, \qquad (x_s, y_s) = (x_{s-1} + \cos\theta_s,\; y_{s-1} + \sin\theta_s) \]</div>
-  <p>Because the genome cycles, a creature with \(L=128\) genes repeats its turning pattern every 128 steps &mdash; the dense, roughly radial symmetry of the evolved tangles comes from this periodicity. The walk halts early if it leaves the grid.</p>
+  <p>Because the genome cycles, the turning pattern repeats every 128 steps. That periodicity is what gives the evolved tangles their rough radial symmetry. The walk stops early if it leaves the grid.</p>
 
   <h2>Counting holes</h2>
   <p>Rasterize the path onto the grid (filled cells = 1). A <em>hole</em> is a connected component of empty cells that cannot reach the grid boundary. We find them with a flood fill: mark every empty cell 4-connected to the border as exterior, then count the connected components of the empty cells left over.</p>
-  <p>This is the discrete version of a topological count. By <strong>Alexander duality</strong>, the number of bounded complementary regions of a closed curve in the plane equals the rank of its first homology &mdash; the number of independent loops. So the genetic algorithm is really maximizing \(b_1\) of a self-intersecting curve. One catch: the flood fill is 4-connected, so a region sealed only by a diagonal step still leaks, and some visually-closed loops don't get counted.</p>
+  <p>This is the discrete version of a topological count. By <strong>Alexander duality</strong>, the number of bounded regions a closed plane curve encloses equals the rank of its first homology: its number of independent loops. So the algorithm really maximizes \(b_1\) of a self-intersecting curve. One catch: the flood fill is 4-connected, so a region sealed only by a diagonal step leaks and doesn't count.</p>
   <div class="formula">\[ \text{score} = -\,(\text{number of holes}), \qquad \text{lower is better} \]</div>
 
   <h2>The genetic algorithm</h2>
   <p>Each generation, all 20 genomes are grown and scored. Then:</p>
   <ul>
-    <li><strong>Select</strong> &mdash; keep the top \(k=2\) by score (the fittest survive unchanged).</li>
-    <li><strong>Mutate</strong> (optional) &mdash; flip the sign of one random gene in each survivor before it breeds. A sign flip turns a left turn into a right turn, which changes the whole downstream path.</li>
-    <li><strong>Reproduce</strong> &mdash; fill the rest of the population with children. Each child picks two parents and inherits each gene from one or the other by an independent coin flip (uniform crossover).</li>
+    <li><strong>Select</strong>: keep the top \(k=2\) by score. They survive unchanged.</li>
+    <li><strong>Mutate</strong> (optional): flip the sign of one random gene in each survivor before it breeds, turning a left turn into a right turn and changing the whole downstream path.</li>
+    <li><strong>Reproduce</strong>: fill the rest of the population with children, each taking every gene from one of two parents by a coin flip (uniform crossover).</li>
   </ul>
-  <p>There is no fitness-proportional sampling and no continuous mutation of magnitudes &mdash; selection just keeps the top two, and the only randomness in breeding is the crossover mask plus the optional sign flip. Even so it converges fast: within a handful of generations the whole population is descended from one or two champion scribbles.</p>
+  <p>No fitness-proportional sampling, no continuous mutation of magnitudes: selection just keeps the top two, and the only breeding randomness is the crossover mask plus the optional sign flip. It still converges fast. Within a few generations the whole population descends from one or two champion scribbles.</p>
 
   <h2>Mutation matters</h2>
-  <p>Toggle mutation off and the population converges fast but then stalls: crossover can only shuffle genes that already exist in the survivors, so once the parents agree on a gene, no child can ever change it. Sign-flip mutation adds variation along the one axis the score cares about (turn direction), which is what lets the search push past a local optimum and reach the dense tangles that trap a hundred-plus holes.</p>
+  <p>Turn mutation off and the population stalls: crossover only shuffles genes that already exist in the survivors, so once the parents agree on a gene no child can change it. Sign-flip mutation adds variation along the axis the score cares about (turn direction), which lets the search escape that plateau and reach the tangles that trap a hundred-plus holes.</p>
 </div>
 
 <script>

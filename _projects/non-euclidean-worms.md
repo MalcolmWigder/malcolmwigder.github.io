@@ -77,7 +77,7 @@ image: /assets/worms.png
   <h2>Spherical Geometry (Positive Curvature)</h2>
   <p>The spherical board maps the game onto \(S^2\), rendered via orthographic projection. The worm travels along lines of latitude and longitude. The metric on the sphere is:</p>
   <div class="formula">\[ ds^2 = d\theta^2 + \sin^2\!\theta \; d\phi^2 \]</div>
-  <p>At the equator, cells have full width. Near the poles, the factor \(\sin\theta \to 0\) and longitude lines converge. The poles are singularities &mdash; reaching one kills the worm. The Gaussian curvature is constant: \(K = 1/R^2\).</p>
+  <p>At the equator, cells have full width. Near the poles, the factor \(\sin\theta \to 0\) and longitude lines converge. The poles are singularities; reaching one kills the worm. The Gaussian curvature is constant: \(K = 1/R^2\).</p>
   <ul>
     <li>Triangles have angle sums exceeding \(\pi\); the excess equals \(\text{Area}/R^2\)</li>
     <li>The "top" and "bottom" are single points (poles), not edges</li>
@@ -89,7 +89,7 @@ image: /assets/worms.png
   <div class="formula">\[ ds^2 = \frac{4(dx^2 + dy^2)}{(1 - x^2 - y^2)^2} \]</div>
   <p>The conformal factor \(\lambda = 2/(1 - r^2)\) diverges at the boundary, meaning the boundary is infinitely far away in hyperbolic distance. Curvature is constant: \(K = -1\).</p>
   <ul>
-    <li>Exponentially more space near the edge &mdash; area of a hyperbolic disk of radius \(\rho\) is \(2\pi(\cosh\rho - 1) \sim \pi e^{\rho}\)</li>
+    <li>Exponentially more space near the edge: area of a hyperbolic disk of radius \(\rho\) is \(2\pi(\cosh\rho - 1) \sim \pi e^{\rho}\)</li>
     <li>Geodesics are arcs of circles orthogonal to the boundary</li>
     <li>Triangles have angle sums less than \(\pi\)</li>
   </ul>

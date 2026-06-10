@@ -14,7 +14,7 @@ My first project for Professor Gonnermann was to design experiments to determine
   <img src="/assets/puzzle1/11.png" width="100%">
 </p>
 
-But we are not interested in the brightness — we are interested in the *volume fraction of gas*, at every \\( z \\), at every \\( t \\).  Here, *volume fraction of gas* means the percentage of the total volume at height \\( z \\) that is occupied by gas (i.e., not liquid).
+But we are not interested in the brightness; we are interested in the *volume fraction of gas*, at every \\( z \\), at every \\( t \\).  Here, *volume fraction of gas* means the percentage of the total volume at height \\( z \\) that is occupied by gas (i.e., not liquid).
 
 We know:
 
@@ -33,7 +33,7 @@ such that
 \\[
 u(L(z)) = a(z)
 \\]  
-— that is, it maps observed luminosity at a height \\( z \\) to the corresponding gas volume fraction —  
+(that is, it maps observed luminosity at a height \\( z \\) to the corresponding gas volume fraction)  
 with the constraint  
 \\[
 \frac{1}{h} \int_0^h u(L(z))\, dz = a_0 \quad \text{for all } t?

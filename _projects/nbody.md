@@ -143,7 +143,7 @@ status: closed
   <div class="panel-inner">
     <h2>Three-Body Problem</h2>
     <p>Add a third comparable mass and the system becomes <em>non-integrable</em>. Poincar&eacute; proved in 1890 that no general closed-form solution exists.</p>
-    <p>Trajectories are sensitive to initial conditions&mdash;deterministic chaos. Small perturbations grow exponentially:</p>
+    <p>Trajectories are sensitive to initial conditions: deterministic chaos. Small perturbations grow exponentially:</p>
     <div class="formula">
       \[ \lvert\delta\mathbf{r}(t)\rvert \;\sim\; \lvert\delta\mathbf{r}(0)\rvert\, e^{\lambda t} \]
     </div>

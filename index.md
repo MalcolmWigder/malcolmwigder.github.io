@@ -16,7 +16,7 @@ A few things about me:
 - 22 years old
 
 Some other interests include:
-- backpacking
+- backpacking / mountaineering
 - tennis (<a href="https://substack.com/home/post/p-182581494" target="_blank">table</a> and actual)
 - writing
 

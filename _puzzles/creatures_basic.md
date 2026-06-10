@@ -57,7 +57,7 @@ Each **generation** runs three phases in order:
   <text x="330" y="126" text-anchor="middle" fill="#555" font-size="10" font-family="-apple-system,sans-serif">repeat</text>
 </svg>
 
-Reproduction is asexual — offspring inherit their parent's value \\( x \\). Generations repeat until **one creature remains**.
+Reproduction is asexual, so offspring inherit their parent's value \\( x \\). Generations repeat until **one creature remains**.
 
 ---
 
