@@ -45,7 +45,7 @@ published: false
     position: absolute;
     left: -2.2em;
     top: 0;
-    color: #ff4b4b;
+    color: #4b8bff;
   }
 
   .item-title {

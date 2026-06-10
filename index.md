@@ -8,18 +8,19 @@ title: Home
   <img src="assets/bio.png" alt="My Bio" style="width:100%;">
   <figcaption style="font-size: 0.7rem; text-align: center; color: #888;">Me at the Puyehue Cordón-Caulle Volcano in Chile</figcaption>
 </figure>
-Hi, my name is Malcolm. Welcome to my website.
+Hi my name is Malcolm. Welcome to my website.
 
-I am a 21 year old at Rice University studying math and physics. My research thusfar has been in ML for atmospheric physics and computational geophysics.
-
-Here is where I will throw up some projects. I am pretty interested in simulating things and trying to solve games, so the projects will be about that probably. I will also post puzzles and publications on here eventually.
+A few things about me:
+- Starting my PhD at UCLA this Fall in geophysics
+- Currently in love
+- 22 years old
 
 Some other interests include:
 - backpacking
 - tennis (<a href="https://substack.com/home/post/p-182581494" target="_blank">table</a> and actual)
 - writing
 
-Email me at mbw7@rice.edu for anything you ever need
+Email me at malcolmwigder@gmail.com for anything you ever need
 <br>
 <br>
 
