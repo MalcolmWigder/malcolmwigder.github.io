@@ -99,8 +99,8 @@ image: /assets/evolution.png
   </ul>
   <p>No fitness-proportional sampling, no continuous mutation of magnitudes: selection just keeps the top two, and the only breeding randomness is the crossover mask plus the optional sign flip. It still converges fast. Within a few generations the whole population descends from one or two champion scribbles.</p>
 
-  <h2>Mutation matters</h2>
-  <p>Turn mutation off and the population stalls: crossover only shuffles genes that already exist in the survivors, so once the parents agree on a gene no child can change it. Sign-flip mutation adds variation along the axis the score cares about (turn direction), which lets the search escape that plateau and reach the tangles that trap a hundred-plus holes.</p>
+  <h2>Mutation (Important)</h2>
+  <p>Turn mutation off and the population stalls: crossover only shuffles genes that already exist in the survivors, so once the parents agree on a gene no child can change it. Sign-flip mutation adds variation along the axis the score cares about (turn direction), which lets the search escape that plateau and reach the tangles that trap a hundred-plus holes. See for yourself.</p>
 </div>
 
 <script>
