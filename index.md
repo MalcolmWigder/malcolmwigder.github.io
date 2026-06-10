@@ -51,12 +51,12 @@ Email me at malcolmwigder@gmail.com for anything you ever need
   .inspiration-list a {
     font-weight: 500;
     color: #999;
-    border-bottom: 2px solid #ff4b4b;
+    border-bottom: 2px solid #4b8bff;
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   .inspiration-list a:hover {
-    color: red;
+    color: #4b8bff;
   }
 </style>

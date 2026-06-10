@@ -48,7 +48,7 @@ image: /assets/evolution.png
 
 <div class="ew">
   <h1 class="pt">Evolving Creatures</h1>
-  <p class="ps">A "creature" is a walk. Starting at the center it takes 1000 unit steps, turning at each step by an angle read cyclically from its <em>genome</em>. We score a creature by how many enclosed regions &mdash; <em>holes</em> &mdash; its path traps, then let a genetic algorithm breed the best ones. Watch a population of random scribbles evolve into dense, hole-filled tangles in real time.</p>
+  <p class="ps">A "creature" is a walk. Starting at the center it takes 1000 unit steps, turning at each step by an angle read cyclically from its <em>genome</em>. I score a creature by how many enclosed regions &mdash; <em>holes</em> &mdash; its path traps, then let a genetic algorithm breed the best ones. Hit Run and the random scribbles fill in over a few generations.</p>
 
   <div class="ctrl">
     <button class="btn primary" id="run">Run</button>
@@ -87,20 +87,20 @@ image: /assets/evolution.png
 
   <h2>Counting holes</h2>
   <p>Rasterize the path onto the grid (filled cells = 1). A <em>hole</em> is a connected component of empty cells that cannot reach the grid boundary. We find them with a flood fill: mark every empty cell 4-connected to the border as exterior, then count the connected components of the empty cells left over.</p>
-  <p>This is a discrete cousin of the topology of the plane curve. By <strong>Alexander duality</strong>, the number of bounded complementary regions of a closed curve in the plane equals the rank of its first homology &mdash; informally, the number of independent loops. The genetic algorithm is, in effect, maximizing \(b_1\) of a self-intersecting curve. One subtlety: the flood fill is 4-connected, so a region sealed only by a diagonal step still <em>leaks</em>, and visually-closed loops sometimes don't count.</p>
+  <p>This is the discrete version of a topological count. By <strong>Alexander duality</strong>, the number of bounded complementary regions of a closed curve in the plane equals the rank of its first homology &mdash; the number of independent loops. So the genetic algorithm is really maximizing \(b_1\) of a self-intersecting curve. One catch: the flood fill is 4-connected, so a region sealed only by a diagonal step still leaks, and some visually-closed loops don't get counted.</p>
   <div class="formula">\[ \text{score} = -\,(\text{number of holes}), \qquad \text{lower is better} \]</div>
 
   <h2>The genetic algorithm</h2>
   <p>Each generation, all 20 genomes are grown and scored. Then:</p>
   <ul>
     <li><strong>Select</strong> &mdash; keep the top \(k=2\) by score (the fittest survive unchanged).</li>
-    <li><strong>Mutate</strong> (optional) &mdash; flip the sign of one random gene in each survivor before it breeds. A sign flip turns a left turn into a right turn, a small but globally disruptive edit.</li>
+    <li><strong>Mutate</strong> (optional) &mdash; flip the sign of one random gene in each survivor before it breeds. A sign flip turns a left turn into a right turn, which changes the whole downstream path.</li>
     <li><strong>Reproduce</strong> &mdash; fill the rest of the population with children. Each child picks two parents and inherits each gene from one or the other by an independent coin flip (uniform crossover).</li>
   </ul>
-  <p>There is no fitness-proportional sampling and no continuous mutation of magnitudes &mdash; selection is brutally elitist and the only randomness in breeding is the crossover mask plus the optional sign flip. It is striking how quickly this finds the spirograph-like attractor: within a handful of generations the population collapses onto descendants of one or two champion scribbles.</p>
+  <p>There is no fitness-proportional sampling and no continuous mutation of magnitudes &mdash; selection just keeps the top two, and the only randomness in breeding is the crossover mask plus the optional sign flip. Even so it converges fast: within a handful of generations the whole population is descended from one or two champion scribbles.</p>
 
   <h2>Mutation matters</h2>
-  <p>Toggle mutation off and the population converges fast but plateaus &mdash; crossover can only recombine genes that already exist somewhere in the survivors, so once the parents agree on a gene, no child can ever change it. Sign-flip mutation reintroduces variation along exactly the axis the objective cares about (turn direction), and lets the search climb past local optima toward the dense balls of yarn that trap a hundred-plus holes.</p>
+  <p>Toggle mutation off and the population converges fast but then stalls: crossover can only shuffle genes that already exist in the survivors, so once the parents agree on a gene, no child can ever change it. Sign-flip mutation adds variation along the one axis the score cares about (turn direction), which is what lets the search push past a local optimum and reach the dense tangles that trap a hundred-plus holes.</p>
 </div>
 
 <script>
