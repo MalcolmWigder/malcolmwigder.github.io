@@ -4,7 +4,7 @@ summary: A genetic algorithm that breeds scribbles into enclosed space
 date: 2026-05-05
 layout: default
 status: open
-published: true
+published: false
 image: /assets/evolution.png
 ---
 
