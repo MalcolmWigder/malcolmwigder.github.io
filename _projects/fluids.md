@@ -132,74 +132,74 @@ status: closed
     <div class="formula">
       \[ \frac{\partial \mathbf{v}}{\partial t} + (\mathbf{v}\cdot\nabla)\mathbf{v} = -\frac{1}{\rho}\nabla p + \nu\nabla^2\mathbf{v} + \mathbf{g} \]
     </div>
-    <p>The nonlinear advection term \((\mathbf{v}\cdot\nabla)\mathbf{v}\) is what makes fluids hard. The <em>Lagrangian</em> alternative: stop watching fixed points and ride along with parcels of fluid instead. The material derivative absorbs advection entirely:</p>
+    <p>The advection term \((\mathbf{v}\cdot\nabla)\mathbf{v}\) is nonlinear and is the main source of difficulty. The <em>Lagrangian</em> formulation discretizes the fluid into parcels and follows them. In a parcel's frame the material derivative absorbs advection:</p>
     <div class="formula">
       \[ \frac{D\mathbf{v}}{Dt} = -\frac{1}{\rho}\nabla p + \nu\nabla^2\mathbf{v} + \mathbf{g} \]
     </div>
-    <p>Advection becomes free &mdash; it is just the particles moving. Mass conservation is automatic, because the particles <em>are</em> the mass. The faint grid behind the fluid is the Eulerian mesh we no longer need; each streak is one parcel's velocity.</p>
+    <p>Advection is handled by the particles moving. Mass conservation is automatic, since the particles carry the mass. The faint grid is the Eulerian mesh this method does not use. Each streak is one parcel's velocity.</p>
   </div>
 </section>
 
 <section class="panel" data-mode="kernel">
   <div class="panel-inner">
     <h2>Smoothed Particles</h2>
-    <p>A particle is not a droplet &mdash; it is a moving sample point. Any continuous field is reconstructed by a kernel-weighted sum over neighbors:</p>
+    <p>Each particle is a sample point carrying mass and velocity. Continuous fields are reconstructed by kernel-weighted sums over neighbors:</p>
     <div class="formula">
       \[ A(\mathbf{r}) \;\approx\; \sum_j \frac{m_j}{\rho_j}\, A_j\, W(\lvert\mathbf{r}-\mathbf{r}_j\rvert,\, h) \]
     </div>
-    <p>Setting \(A = \rho\) gives the density estimate, the first step of every timestep:</p>
+    <p>Setting \(A = \rho\) gives the density estimate, computed first every step:</p>
     <div class="formula">
       \[ \rho_i = \sum_j m_j\, W(\lvert\mathbf{r}_i-\mathbf{r}_j\rvert,\, h), \qquad W_{\text{poly6}} = \frac{4}{\pi h^8}\,(h^2 - r^2)^3 \]
     </div>
-    <p>\(h\) is the <em>smoothing length</em> &mdash; the rings show its size on a few tracked particles. Everything inside a ring contributes to that particle's density; everything outside is invisible to it. Color encodes density.</p>
+    <p>The smoothing length \(h\) sets the interaction range. The rings show it on three tracked particles: neighbors inside the ring contribute to that particle's density, neighbors outside do not. Color encodes density.</p>
   </div>
 </section>
 
 <section class="panel" data-mode="pressure">
   <div class="panel-inner">
     <h2>Pressure</h2>
-    <p>True incompressibility means solving a Poisson equation every step. The weakly-compressible shortcut (M&uuml;ller et al., 2003) trades that for a stiff equation of state:</p>
+    <p>Exact incompressibility requires a Poisson solve every step. Weakly compressible SPH (M&uuml;ller et al., 2003) uses a stiff equation of state instead:</p>
     <div class="formula">
       \[ p = k\,(\rho - \rho_0), \qquad p \ge 0 \]
     </div>
-    <p>Compressed regions push back; the clamp at zero avoids tensile instability. The force is symmetrized so Newton's third law holds pairwise:</p>
+    <p>Compressed regions develop pressure and push back. The clamp at zero avoids the tensile instability. The force is symmetrized so momentum is conserved pairwise:</p>
     <div class="formula">
       \[ \mathbf{f}_i^{\,\text{press}} = -\sum_j m_j\, \frac{p_i + p_j}{2\rho_j}\, \nabla W_{\text{spiky}} \]
     </div>
-    <p>The <em>spiky</em> kernel is used here because the poly6 gradient vanishes as \(r \to 0\) &mdash; particles would clump without resistance. Spiky's gradient stays finite all the way in. Color encodes pressure: watch it spike where the fluid slams into the wall.</p>
+    <p>The gradient uses the <em>spiky</em> kernel rather than poly6: the poly6 gradient vanishes as \(r \to 0\), so close pairs would feel no repulsion and clump. Color encodes pressure. It peaks where the fluid meets the walls.</p>
   </div>
 </section>
 
 <section class="panel" data-mode="viscosity">
   <div class="panel-inner">
     <h2>Viscosity</h2>
-    <p>Internal friction diffuses momentum between neighboring parcels:</p>
+    <p>Viscosity diffuses momentum between neighboring parcels:</p>
     <div class="formula">
       \[ \mathbf{f}_i^{\,\text{visc}} = \mu \sum_j m_j\, \frac{\mathbf{v}_j - \mathbf{v}_i}{\rho_j}\, \nabla^2 W_{\text{visc}}, \qquad \nabla^2 W = \frac{40}{\pi h^5}(h - r) \]
     </div>
-    <p>This kernel's Laplacian is positive everywhere, so the force always damps <em>relative</em> motion and never injects energy &mdash; it is unconditionally stabilizing, which is why it doubles as the simulation's safety net.</p>
-    <p>Here \(\mu\) is raised four-fold: the same dam break, but the water is now honey. Vorticity dies before it forms, and the collapse becomes a slow ooze.</p>
+    <p>The Laplacian of this kernel is positive everywhere, so the force only damps <em>relative</em> motion and never adds energy (M&uuml;ller, 2003). It also stabilizes the explicit integration.</p>
+    <p>Here \(\mu\) is raised three-fold. The same dam break becomes a slow collapse.</p>
   </div>
 </section>
 
 <section class="panel" data-mode="grid">
   <div class="panel-inner">
     <h2>Finding Neighbors</h2>
-    <p>Every SPH sum runs only over neighbors within \(h\) &mdash; the kernels have compact support. Testing all pairs is \(\mathcal{O}(N^2)\); the fix is a uniform grid with cell size exactly \(h\):</p>
+    <p>The kernels have compact support, so every SPH sum runs over neighbors within \(h\). Testing all pairs costs \(\mathcal{O}(N^2)\). A uniform grid with cell size \(h\) reduces it:</p>
     <div class="formula">
       \[ \text{bin all particles} \;\rightarrow\; \text{scan } 3\times3 \text{ cells} \;\Rightarrow\; \mathcal{O}(N) \]
     </div>
-    <p>Particles are bucketed with a counting sort each substep (no allocation, cache-friendly). The outlined cells are the occupied bins; one particle's kernel radius and its \(3\times3\) neighborhood are highlighted.</p>
-    <p>The same loop ported to the GPU (Taichi, one thread per particle) ran 10,000+ particles at 60&thinsp;fps &mdash; the structure parallelizes for free because each particle only reads its neighborhood. The stability rule of thumb: \(\Delta t \cdot v_{\max} < h\), so nothing skips past its own neighbor cell.</p>
+    <p>Particles are binned with a counting sort each substep. The outlined cells are the occupied bins; the highlighted square is one particle's \(3\times3\) search neighborhood, with its kernel radius drawn inside.</p>
+    <p>The same loop ported to the GPU (Taichi, one thread per particle) ran 10,000+ particles at 60&thinsp;fps, since each particle only reads its own neighborhood. Stability requires \(\Delta t \cdot v_{\max} < h\), so a particle cannot cross a cell in one step.</p>
   </div>
 </section>
 
 <section class="panel" data-mode="zerog">
   <div class="panel-inner">
     <h2>Zero Gravity</h2>
-    <p>Switch gravity off, add a weak cohesive attraction between neighbors, and give the fluid a spin. Pressure pushes out, cohesion pulls in, and the competition settles into a rotating drop &mdash; a poor man's surface tension.</p>
-    <p>The full project went further: spinning-drop experiments in 2D and 3D measuring spin-down against viscosity, drop oscillation under a tension force, and radial collisions of free-floating blobs &mdash; all on the GPU via Taichi.</p>
-    <p>What you are watching on this page is the same algorithm in plain JavaScript: a couple thousand particles, four substeps per frame, density &rarr; pressure &rarr; forces &rarr; integrate, sixty times a second in your browser.</p>
+    <p>Gravity off. A weak cohesive attraction between neighbors stands in for surface tension, and the fluid is given an initial spin. Pressure pushes out, cohesion pulls in, and the balance is a rotating drop.</p>
+    <p>The full project ran these experiments in 2D and 3D with Taichi: spinning drops with spin-down measured against viscosity, drop oscillation under a tension force, and collisions of free-floating blobs.</p>
+    <p>This page runs the same algorithm in plain JavaScript: density &rarr; pressure &rarr; forces &rarr; integration, four substeps per frame, about two thousand particles.</p>
   </div>
 </section>
 
@@ -225,7 +225,7 @@ status: closed
   var SPIKY = -30 / (Math.PI * Math.pow(H, 5));
   var VLAP = 40 / (Math.PI * Math.pow(H, 5));
   var SELF_RHO = M * POLY6 * H2 * H2 * H2;
-  var DT = 2.5e-3, VCLAMP = 8, PAD = 0.5 * H, WALL_REST = 0.3;
+  var DT = 2.5e-3, VCLAMP = 4, PAD = 0.5 * H, WALL_REST = 0.3;
 
   /* ── particle state ── */
   var MAXN = 2600, n = 0;
@@ -366,7 +366,7 @@ status: closed
       for (var x = -R; x <= R; x += SP)
         if (x * x + y * y <= R * R && n < MAXN - 1) {
           px[n] = bx + x; py[n] = by + y;
-          vx[n] = 0; vy[n] = -0.8;
+          vx[n] = 0; vy[n] = -0.6;
           n++;
         }
   }
@@ -404,20 +404,20 @@ status: closed
   };
   function colorT(i) {
     if (cfg.color === 'density')  return (rho[i] - 600) / 700;
-    if (cfg.color === 'pressure') return pre[i] / 25000;
+    if (cfg.color === 'pressure') return pre[i] / 15000;
     var s = Math.sqrt(vx[i] * vx[i] + vy[i] * vy[i]);
-    return cfg.color === 'honey' ? s / 1.5 : s / 3;
+    return cfg.color === 'honey' ? s / 1.2 : s / 2;
   }
 
   /* ── modes ── */
   var MODES = {
-    intro:      { init: initDam,  g: -6, k: 50, mu: 0.2, color: 'speed',    reset: 14, label: 'WCSPH (Müller 2003)' },
-    lagrangian: { init: initDam,  g: -6, k: 50, mu: 0.2, color: 'speed',    reset: 14, streaks: true, eulerGrid: true, label: 'Lagrangian frame' },
-    kernel:     { init: initPool, g: -6, k: 50, mu: 0.25, color: 'density', reset: 20, rings: true, label: 'poly6 density' },
-    pressure:   { init: initDam,  g: -6, k: 50, mu: 0.2, color: 'pressure', reset: 14, label: 'p = k(ρ − ρ₀)' },
-    viscosity:  { init: initDam,  g: -6, k: 50, mu: 0.8, color: 'honey',    reset: 18, label: 'μ × 4' },
-    grid:       { init: initDam,  g: -6, k: 50, mu: 0.2, color: 'speed',    reset: 14, hashGrid: true, label: 'spatial hash O(N)' },
-    zerog:      { init: initDisc, g: 0,  k: 50, mu: 0.3, color: 'speed',    coh: 0.6, damp: 0.999, label: 'g = 0, cohesion on' }
+    intro:      { init: initDam,  g: -3.5, k: 50, mu: 0.3, color: 'speed',    reset: 16, label: 'WCSPH (Müller 2003)' },
+    lagrangian: { init: initDam,  g: -3.5, k: 50, mu: 0.3, color: 'speed',    reset: 16, streaks: true, eulerGrid: true, label: 'Lagrangian frame' },
+    kernel:     { init: initPool, g: -3.5, k: 50, mu: 0.3, color: 'density',  reset: 20, rings: true, label: 'poly6 density' },
+    pressure:   { init: initDam,  g: -3.5, k: 50, mu: 0.3, color: 'pressure', reset: 16, label: 'p = k(ρ − ρ₀)' },
+    viscosity:  { init: initDam,  g: -3.5, k: 50, mu: 0.9, color: 'honey',    reset: 20, label: 'μ × 3' },
+    grid:       { init: initDam,  g: -3.5, k: 50, mu: 0.3, color: 'speed',    reset: 16, hashGrid: true, label: 'spatial hash O(N)' },
+    zerog:      { init: initDisc, g: 0,    k: 50, mu: 0.4, color: 'speed',    coh: 1.1, damp: 0.999, label: 'g = 0, cohesion on' }
   };
 
   function setMode(m) {
@@ -438,7 +438,7 @@ status: closed
       var dt = Math.max((now - mLast) / 1000, 1 / 240);
       mVX = (wx - mWX) / dt; mVY = (wy - mWY) / dt;
       var s = Math.sqrt(mVX * mVX + mVY * mVY);
-      if (s > 6) { mVX *= 6 / s; mVY *= 6 / s; }
+      if (s > 4) { mVX *= 4 / s; mVY *= 4 / s; }
     }
     mWX = wx; mWY = wy; mLast = now; mHave = true;
   }
