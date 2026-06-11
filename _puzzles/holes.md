@@ -5,7 +5,7 @@ date: 2026-05-05
 layout: default
 image: /assets/evolution.png
 status: open
-published: true
+published: false
 ---
 
 From the [Evolving Creatures]({{ site.baseurl }}/projects/) project, where a genetic algorithm breeds walks that trap as many enclosed regions (**holes**) as possible.
